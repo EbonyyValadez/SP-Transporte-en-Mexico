@@ -1,0 +1,101 @@
+---
+title: "Redes Bayesianas para el transporte"
+author:
+  - name: "Jessica Dong"
+  - name: "Ebony Valadez"
+  - name: "Emiliano Guzmán"
+  - name: "Rafael Gutiérrez "
+date: today
+lang: es
+abstract: |
+  Este estudio utiliza la Encuesta Origen-Destino del INEGI realizada en 2017 para analizar los patrones de movilidad de los ciudadanos en la Ciudad de México. Mediante el uso de la teoría de redes bayesianas, se construye un modelo probabilístico a partir de los datos de la encuesta para analizar las relaciones entre las variables sociodemográficas y de transporte. Se proponen y evalúan diferentes estructuras de Redes Acíclicas Dirigidas (DAGs) para representar estas dependencias. Los resultados del análisis permiten responder a preguntas clave sobre la movilidad. Se busca resaltar la importancia de los modelos probabilísticos para comprender la complejidad de los modelos de transporte en las ciudades mexicanas, con el objetivo de brindar información útil para la planeación de políticas públicas relacionadas con el transporte.
+keywords: ["redes bayesianas", "bnlearn", "movilidad", "discretización"]
+
+execute:
+  echo: false       
+  warning: false
+  message: false
+
+#bibliography: refs.bib
+csl: https://www.zotero.org/styles/apa
+link-citations: true
+
+crossref:
+  fig-prefix: "Figura"
+  tbl-prefix: "Tabla"
+  eq-prefix: "Ecuación"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    code-fold: show
+    code-tools: true
+    df-print: paged
+    math: mathjax
+  pdf:
+    documentclass: article
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    geometry: "margin=1in"
+    fig-cap-location: bottom
+    tbl-cap-location: top
+---
+
+## Introducción
+
+La movilidad urbana es un aspecto fundamental para el desarrollo socioeconómico de las ciudades modernas, ya que esta influye de manera significativa en la calidad de vida de sus habitantes, el medio ambiente y la economía de cada una. En la Zona Metropolitana del Valle de México, esto presenta una gran complejidad debido a su tamaño, densidad de población y red de transporte. Comprender los patrones de viaje y los factores que influyen en la toma de decisiones de los ciudadanos es crucial para el diseño de políticas públicas más efectivas y sostenibles.
+
+La Encuesta Origen-Destino en Hogares (EOD) 2017, realizada por el Instituto Nacional de Estadística y Geografía (INEGI) en colaboración con el Instituto de Ingeniería de la UNAM, fue la fuente de datos más importante para este proyecto. A partir de esta encuesta, se obtuvo información que muestra los patrones de movilidad cotidiana de los habitantes de la Ciudad de México y las características de los viajes que estos realizan. Mediante estos datos, es posible analizar las relaciones entre variables sociodemográficas (como género, edad e ingresos) y las decisiones de transporte (como el medio utilizado, la duración y el motivo del viaje) \[1\].
+
+Este artículo explora estas relaciones de dependencia utilizando la teoría de las **redes bayesianas**. Este enfoque permite modelar la estructura de dependencia probabilística entre múltiples variables, lo que es bastante útil para analizar fenómenos complejos como la movilidad urbana. El objetivo de este estudio es es construir y comparar diferentes modelos de Redes Acíclicas Dirigidas (DAGs) que representen las relaciones entre las variables de la encuesta mencionada; para posteriormente, responder preguntas de investigación específicas acerca de la movilidad en la ZMVM.
+
+## Metodología
+
+## Aplicación
+
+Trabajamos con la EOD-2017 (ZMVM; \~890 000 registros). Las variables consideradas fueron: S (Sexo), A (Edad categorizada), EST (Estrato), T (Transporte), D (Día de viaje), O (Entidad de origen), L (Tamaño de localidad), V (Autos disponibles), ESC (Escolaridad) y H (Duración del viaje). Tras la limpieza de códigos, recodificamos a factores con etiquetas y discretizamos cuando fue necesario (p. ej., H en *Menos1h* vs *1homas*).
+
+Modelamos con redes bayesianas discretas. Primero propusimos un DAG sustentado en hipótesis sustantivas; al mismo tiempo, aprendimos una estructura desde los datos mediante hill climbing. Para ambas estructuras ajustamos las tablas de probabilidad condicional (CPTs) con suavizado bayesiano.
+
+La selección del modelo se basó en AIC y BIC, buscando el mejor equilibrio entre ajuste y complejidad. Además, evaluamos dependencias locales con `arc.strength` (información mutua) y pruebas de independencia para identificar arcos débiles o prescindibles.
+
+Sobre el modelo seleccionado realizamos las consultas probabilísticas con `cpquery` mediante likelihood weighting, reportando los valores puntuales y señalando las limitaciones muestrales cuando aplicaba.
+
+### Uso de auto/moto por sexo y edad (entre semana) {#q1}
+
+Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.
+
+### Probabilidad de residir en Aguascalientes dado taxi {#q2}
+
+¿Cuál es la probabilidad de que una persona de estrato MedioBajo viva en Aguascalientes dado que se mueve en taxi?
+
+En esta consulta, el evento de interés *O* = *Aguascalientes* está fuera del soporte muestral de la base utilizada. La EOD-2017 analizada corresponde a la Zona Metropolitana del Valle de México (ZMVM); en este marco, la variable O (Entidad de origen) solo toma los valores CDMX, Hidalgo y Edomex. Es decir que el dominio observado de (O) es $$ \Omega_O = \{\text{CDMX},\text{Hidalgo},\text{Edomex}\}
+$$por lo que *Aguascalientes* no pertenece al dominio. Esta restricción se confirma con un conteo simple: la frecuencia de registros con *O* = *Aguascalientes* es 0.
+
+Bajo esta situación, la probabilidad condicional solicitada se evalúa como: $$
+P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr)
+=\frac{\#\{O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}
+{\#\{EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}.
+$$Dado que el numerador es 0 (no existen casos con *O* = *Aguascalientes* en la muestra) y el denominador es positivo (sí hay observaciones con *EST* = *MedioBajo* y *T* = *Taxi*), se obtiene:
+
+$$
+P(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\, T=\mathrm{Taxi})=0
+$$
+
+Es importante mencionar que se trata de una imposibilidad muestral por ausencia de casos en la muestra, no necesariamente de una imposibilidad poblacional.
+
+### Duración \>1 h por tamaño de localidad y modo {#q3}
+
+Nos interesa saber si es más probable que las personas de localidades \< 2,500 habitantes realicen viajes de más de 1 hora en automóvil, colectivo/micro, metro, autobús, trolebús, tren ligero, tren suburbano o transporte de personal, en comparación con las personas de localidades \> 100,000 habitantes que cumplan con las mismas características.
+
+### Autos/camionetas y escolaridad {#q4}
+
+¿Cuál es la probabilidad de que una persona tenga al menos un auto o camioneta dado que su nivel de escolaridad es primaria o preescolar?
+
+## Conclusiones
+
+## Referencias
