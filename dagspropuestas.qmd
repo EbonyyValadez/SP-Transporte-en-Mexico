@@ -31,8 +31,10 @@ data$A   <- factor(data$A)     # edad_cat
 data$EST <- factor(data$EST)   # estrato
 data$T   <- factor(data$T)     # transporte
 data$D   <- factor(data$D)     # dia_viaje
+
 data$O   <- factor(data$O)     # entidad
 data$L   <- factor(data$L)     # localidad
+
 data$H   <- factor(data$H)     # tiempo_cat
 data$V   <- factor(data$V)     # autos_camionetas
 data$ESC <- factor(data$ESC)   # escolaridad
@@ -84,9 +86,7 @@ sapply(data[, c("A","D","EST","V","L","H","O","ESC","S","T")], class)
 bn_mle=bn.fit(dag1,data=data, method='mle')
 arc.strength(dag1, data = data, criterion = "mi")
 ```
-```{r}
-bn_mle$ESC
-```
+
 
 
 ```{r}
@@ -130,6 +130,20 @@ dag2
 graphviz.plot(dag2, shape = "rectangle")
 ```
 ```{r}
+arc.strength(dag2, data = data, criterion = "mi")
+```
+
+```{r}
+score(dag2, data = data, type = "bic")
+```
+```{r}
+score(dag2, data = data, type = "aic")
+
+```
+
+
+
+```{r}
 dag3 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
 ```{r}
@@ -152,9 +166,17 @@ arcs(dag3) = arc_set3
 ```
 ```{r}
 dag3
+arc.strength(dag3, data = data, criterion = "mi")
 ```
 ```{r}
 graphviz.plot(dag3, shape = "rectangle")
+```
+```{r}
+score(dag3, data = data, type = "bic")
+```
+```{r}
+score(dag3, data = data, type = "aic")
+
 ```
 
 
