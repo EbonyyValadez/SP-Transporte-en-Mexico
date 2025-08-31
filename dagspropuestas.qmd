@@ -22,9 +22,22 @@ install.packages("bnlearn")
 library(bnlearn)
 ```
 ```{r}
-data=read.csv("",stringsAsFactors = TRUE)
+data=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv",stringsAsFactors = TRUE)
 head(data)
 ```
+```{r}
+data$S   <- factor(data$S)     # sexo
+data$A   <- factor(data$A)     # edad_cat
+data$EST <- factor(data$EST)   # estrato
+data$T   <- factor(data$T)     # transporte
+data$D   <- factor(data$D)     # dia_viaje
+data$O   <- factor(data$O)     # entidad
+data$L   <- factor(data$L)     # localidad
+data$H   <- factor(data$H)     # tiempo_cat
+data$V   <- factor(data$V)     # autos_camionetas
+data$ESC <- factor(data$ESC)   # escolaridad
+```
+
 Para el manejo de la DAG se asignó una clave corta a cada variable:
     A = edad_cat,
     D = dia_viaje,
@@ -36,6 +49,8 @@ Para el manejo de la DAG se asignó una clave corta a cada variable:
     ESC = escolaridad,
     S = sexo,
     T = transporte
+
+
 ```{r}
 dag1 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
@@ -62,6 +77,29 @@ dag1
 ```{r}
 graphviz.plot(dag1, shape = "rectangle")
 ```
+```{r}
+sapply(data[, c("A","D","EST","V","L","H","O","ESC","S","T")], class)
+```
+```{r}
+bn_mle=bn.fit(dag1,data=data, method='mle')
+arc.strength(dag1, data = data, criterion = "mi")
+```
+```{r}
+bn_mle$ESC
+```
+
+
+```{r}
+arc.strength(dag1, data = data, criterion = "mi")
+```
+
+```{r}
+score(dag1, data = data, type = "bic")
+```
+```{r}
+score(dag1, data = data, type = "aic")
+```
+
 
 ```{r}
 dag2 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
@@ -121,19 +159,3 @@ graphviz.plot(dag3, shape = "rectangle")
 
 
 
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
