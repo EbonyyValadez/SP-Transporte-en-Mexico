@@ -1,0 +1,139 @@
+---
+title: "DAGs propuestas"
+author: "Rafael Gutiérrez"
+format: 
+    html:
+     toc: true
+     html-math-method: katex
+     embed-resources: true
+     self-contained-math: true
+     df-print: kable
+editor: source
+editor: visual
+---
+
+## DAGs propuestas
+
+```{r}
+#| eval: false
+install.packages("bnlearn")
+```
+```{r}
+library(bnlearn)
+```
+```{r}
+data=read.csv("",stringsAsFactors = TRUE)
+head(data)
+```
+Para el manejo de la DAG se asignó una clave corta a cada variable:
+    A = edad_cat,
+    D = dia_viaje,
+    EST = estrato,
+    V = autos_camionetas,
+    L = localidad,
+    H = tiempo_cat,     
+    O = Entidad,        
+    ESC = escolaridad,
+    S = sexo,
+    T = transporte
+```{r}
+dag1 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+```{r}
+arc_set1 = matrix(c("A","ESC",
+                   "ESC","EST",
+                   "EST","V",
+                   "V","T",
+                   "T","H",
+                   "S","T",
+                   "D","T",
+                   "O","L",
+                   "L","EST",
+                   "L","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+```{r}
+arcs(dag1) = arc_set1
+```
+```{r}
+dag1
+```
+```{r}
+graphviz.plot(dag1, shape = "rectangle")
+```
+
+```{r}
+dag2 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+
+```{r}
+arc_set2 = matrix(c("O","L",
+                   "L","EST",
+                   "EST","T",
+                   "O","H",
+                   "L","H",
+                   "EST","V",
+                   "V","T",
+                   "S","T",
+                   "A","ESC",
+                   "ESC","T",
+                   "D","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+```{r}
+arcs(dag2) = arc_set2
+```
+```{r}
+dag2
+```
+```{r}
+graphviz.plot(dag2, shape = "rectangle")
+```
+```{r}
+dag3 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+```{r}
+arc_set3 = matrix(c("A","ESC",
+                   "ESC","EST",
+                   "EST","T",
+                   "T","H",
+                   "S","T",
+                   "A","V",
+                   "V","T",
+                   "O","L",
+                   "L","T",
+                   "D","T",
+                   "L","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+```{r}
+arcs(dag3) = arc_set3
+```
+```{r}
+dag3
+```
+```{r}
+graphviz.plot(dag3, shape = "rectangle")
+```
+
+
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
