@@ -1,0 +1,184 @@
+---
+title: "Base de datos a categórica"
+format: 
+    html:
+     toc: true
+     html-math-method: katex
+     embed-resources: true
+     self-contained-math: true
+     df-print: kable
+editor: source
+---
+
+```{r}
+library(bnlearn)
+library(readr)
+```
+```{r}
+set.seed(1234)
+```
+
+```{r}
+datos=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv")
+head(datos)
+```
+```{r}
+#Sexo
+datos$S = factor(datos$S,
+                  levels = c(1, 2),
+                  labels = c("Hombre", "Mujer"))
+
+#Transporte
+datos$T = factor(datos$T,
+                  levels = 1:20,
+                  labels = c("Auto", "Colectivo", "TaxiApp", "TaxiCalle",
+                             "Metro", "RTP_M1", "Bici", "Autobus",
+                             "Moto", "Trolebus", "Metrobús",
+                             "TrenLigero", "Suburbano", "Caminar",
+                             "Mexicable", "Bicitaxi", "Mototaxi",
+                             "Escolar", "Personal", "Otro"))
+
+#Estrato
+datos$EST = factor(datos$EST,
+                    levels = 1:4,
+                    labels = c("Bajo", "MedioBajo", "MedioAlto", "Alto"))
+
+#Día de viaje
+datos$D = factor(datos$D,
+                  levels = c(1, 2),
+                  labels = c("Semana", "FinSemana"))
+
+#Entidad
+datos$O = factor(datos$O,
+                  levels = c(9, 13, 15),
+                  labels = c("CDMX", "Hidalgo", "Edomex"))
+
+#Localidad
+datos$L = factor(datos$L,
+                  levels = 1:4,
+                  labels = c("Loc_100k+", "Loc_15k_99k", "Loc_2.5k_14k", "Loc_menor2.5k"))
+
+#Cantidad de vehículos con los que cuentan
+datos$V = factor(datos$V,
+                  levels = 0:8,
+                  labels = paste0("Autos_", 0:8))
+
+#Escolaridad
+datos$ESC = factor(datos$ESC,
+                    levels = c(0:9, 99),
+                    labels = c("Ninguno", "Preescolar", "Primaria", "Secundaria",
+                               "CarrTecSec", "NormalBas", "Prepa", "CarrTecPrepa",
+                               "Licenciatura", "Posgrado", "NoSabe"))
+
+#Edad categorizada
+datos$A = factor(datos$A,
+                  levels = 1:4,
+                  labels = c("Joven", "Adulto", "MedianaEdad", "AdultoMayor"))
+
+#Tiempo de viaje (0 = menos de 1h, cualquier otro valor = 1h o más)
+datos$H = ifelse(datos$H == 0, 0, 1)
+datos$H = factor(datos$H,
+                  levels = c(0, 1),
+                  labels = c("Menos1h", "1homas"))
+
+
+#Confirmar que en todas las variables sus valores sean factores
+sapply(datos, class)
+```
+```{r}
+head(datos)
+```
+
+
+
+```{r}
+dag1 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+```{r}
+arc_set1 = matrix(c("A","ESC",
+                   "ESC","EST",
+                   "EST","V",
+                   "V","T",
+                   "T","H",
+                   "S","T",
+                   "D","T",
+                   "O","L",
+                   "L","EST",
+                   "L","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+```{r}
+arcs(dag1) = arc_set1
+```
+```{r}
+dag1
+```
+```{r}
+graphviz.plot(dag1, shape = "rectangle")
+```
+
+```{r}
+arc.strength(dag1, data = datos, criterion = "mi")
+```
+```{r}
+bn=bn.fit(dag1,data=datos)
+
+```
+```{r}
+score(dag1, data = datos, type = "bic")
+```
+
+```{r}
+best_dag = hc(datos)
+```
+```{r}
+bn=bn.fit(best_dag,data=datos)
+```
+```{r}
+graphviz.plot(best_dag, shape = "rectangle")
+```
+
+```{r}
+arc.strength(best_dag, data = datos, criterion = "mi")
+```
+
+```{r}
+score(best_dag, data = datos, type = "bic")
+```
+```{r}
+score(best_dag, data = datos, type = "aic")
+```
+Se puede notar que la DAG generada por Hill Climbing se ajusta mejor con base en los puntajes en las pruebas de comparación con la mejor DAG de las 3 propuestas anteriormente.
+
+prueba de Query: Rafa
+Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación a las mujeres con las mismas características.
+```{r}
+cpquery(bn,
+        event = (T %in% c("Auto","Moto")),
+        evidence = (S == "Hombre" &
+                    A %in% c("MedianaEdad","AdultoMayor") &
+                    EST == "MedioBajo" &
+                    D == "Semana"),
+        n = 10^6)
+```
+```{r}
+cpquery(bn,
+        event = (T %in% c("Auto","Moto")),
+        evidence = (S == "Mujer" &
+                    A %in% c("MedianaEdad","AdultoMayor") &
+                    EST == "MedioBajo" &
+                    D == "Semana"),
+        n = 10^6)
+```
+
+```{r}
+cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Hombre")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), n = 10^6)
+```
+```{r}
+cpquery(bn, 
+        event = ((T=="Moto")|(T=="Auto")), 
+        evidence = (((S=="Mujer")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Mujer")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), 
+        n = 10^6)
+```
+Respuesta: sí, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.
