@@ -1,6 +1,5 @@
 ---
 title: "DAGs propuestas"
-author: "Rafael Gutiérrez"
 format: 
     html:
      toc: true
@@ -9,7 +8,6 @@ format:
      self-contained-math: true
      df-print: kable
 editor: source
-editor: visual
 ---
 
 ## DAGs propuestas
