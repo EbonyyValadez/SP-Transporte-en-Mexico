@@ -1,0 +1,80 @@
+---
+title: "Dataset corregido"
+format: html
+editor: visual
+---
+
+```{r}
+set.seed(1234)
+df = read_csv("~/Desktop/Repositorio/Datos Finales/Data/data_final.csv")
+```
+```{r}
+head(df)
+```
+
+Revisamos los cantidad de filas con el valor "99" ya que éste es un código dentro de la INEGI para decir que ese dato se perdió o no se especificó, si son menos del 5% de los datos cambiaremos esos valores por nan para luego eliminarlos.
+```{r}
+# Número de 99 en la columna
+sum(df$tiempo_viaje_horas == 99, na.rm = TRUE)
+```
+Podemos ver que son poco más de 1% (9913/890748=0.01112) por lo que proseguirermos con lo recién dicho.
+```{r}
+df$tiempo_viaje_horas[df$tiempo_viaje_horas == 99] = NA
+df = df[!is.na(df$tiempo_viaje_horas), ]
+```
+
+Verifiquemos que se hayan eliminado
+```{r}
+sum(df$tiempo_viaje_horas == 99, na.rm = TRUE)
+```
+
+Ahora podemos discretizar las variables de edad y tiempo_viaje_horas ya que son variables continuas, los intervalos fueron decididos por nosotros básandonos en lo que cada query solicitaba.
+
+```{r}
+# Edad = 1: joven (6-18),2: adultos (19-40),3: mediana edad (41-59),4: adultos mayores (60+)
+df$edad_cat <- cut(as.numeric(df$edad),
+                   breaks = c(6, 18, 40, 59, 99),  # límites de los intervalos
+                   labels = c(1, 2, 3, 4),
+                   right = TRUE, include.lowest = TRUE)
+
+# Variable binaria: 0 es menor a una hora y 1 es una hora o más
+df$tiempo_cat = cut(
+  df$tiempo_viaje_horas,
+  breaks = c(0, 1, 24),   
+  labels = c("0", "1"),
+  right = FALSE, include.lowest = TRUE
+)
+
+head(df,10)
+```
+
+Eliminamos las variables de edad y tiempo_viaje_horas.
+```{r}
+# Eliminar columnas originales
+df = subset(df, select = -c(edad, tiempo_viaje_horas))
+```
+
+Cambiamos los nombres de las variables.
+```{r}
+library(dplyr)
+
+df = df %>%
+  rename(
+    A = edad_cat,
+    D = dia_viaje,
+    EST = estrato,
+    V = autos_camionetas,
+    L = localidad,
+    H = tiempo_cat,     
+    O = entidad_origen,        
+    ESC = escolaridad,
+    S = sexo,
+    T = transporte
+  )
+```
+
+Exportamos a csv
+```{r}
+write.csv(df, "~/Desktop/Repositorio/Datos Finales/Data/data_corregido.csv", row.names = FALSE)
+```
+
