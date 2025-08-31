@@ -20,22 +20,23 @@ install.packages("bnlearn")
 library(bnlearn)
 ```
 ```{r}
-data=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv",stringsAsFactors = TRUE)
+set.seed(1234)
+data=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv", stringsAsFactors = TRUE)
 head(data)
 ```
 ```{r}
-data$S   <- factor(data$S)     # sexo
-data$A   <- factor(data$A)     # edad_cat
-data$EST <- factor(data$EST)   # estrato
-data$T   <- factor(data$T)     # transporte
-data$D   <- factor(data$D)     # dia_viaje
+data$S   = factor(data$S)     # sexo
+data$A   = factor(data$A)     # edad_cat
+data$EST = factor(data$EST)   # estrato
+data$T   = factor(data$T)     # transporte
+data$D   = factor(data$D)     # dia_viaje
 
-data$O   <- factor(data$O)     # entidad
-data$L   <- factor(data$L)     # localidad
+data$O   = factor(data$O)     # entidad
+data$L   = factor(data$L)     # localidad
 
-data$H   <- factor(data$H)     # tiempo_cat
-data$V   <- factor(data$V)     # autos_camionetas
-data$ESC <- factor(data$ESC)   # escolaridad
+data$H   = factor(data$H)     # tiempo_cat
+data$V   = factor(data$V)     # autos_camionetas
+data$ESC = factor(data$ESC)   # escolaridad
 ```
 
 Para el manejo de la DAG se asignó una clave corta a cada variable:
@@ -50,7 +51,7 @@ Para el manejo de la DAG se asignó una clave corta a cada variable:
     S = sexo,
     T = transporte
 
-
+La DAG 1 se formula con base en que la edad determina la educación y ésta se relaciona con el estrato sociodemográfico de la perosna y el tipo de transporte que utiliza, así como arcos en función de cuestiones geográficas y el tiempo de traslado, así como quizá el sexo interfiera con el medio de transporte.
 ```{r}
 dag1 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
@@ -77,9 +78,7 @@ dag1
 ```{r}
 graphviz.plot(dag1, shape = "rectangle")
 ```
-```{r}
-sapply(data[, c("A","D","EST","V","L","H","O","ESC","S","T")], class)
-```
+
 ```{r}
 bn_mle=bn.fit(dag1,data=data, method='mle')
 arc.strength(dag1, data = data, criterion = "mi")
@@ -98,7 +97,7 @@ score(dag1, data = data, type = "bic")
 score(dag1, data = data, type = "aic")
 ```
 
-
+La segunda DAG propuesta se centra principalmente en el entorno geográfico, es decir, que del lugar de origen o la localidad se relacionan el estrato, el tiempo del viaje, la cantidad de vehículos, así como otras relaciones entre el sexo y la edad para determinar la escolaridad y el medio de transporte.
 ```{r}
 dag2 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
@@ -139,7 +138,7 @@ score(dag2, data = data, type = "aic")
 
 ```
 
-
+Por último, la tercera DAG se basa principalmente en factores personales como los determinantes de mayor impacto. Teniendo como nodos padres e independientes la edad y el sexo, y que a partir de éstos se condicionen otros aspectos relacionados con la movilidad de las personas, su escolaridad y el estrato en el que se encuentran.
 
 ```{r}
 dag3 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
@@ -174,9 +173,10 @@ score(dag3, data = data, type = "bic")
 ```
 ```{r}
 score(dag3, data = data, type = "aic")
+dim(data)
 
 ```
-
+Con base en los puntajes de la prueba BIC, aquella que tenía el mayor de éstas y en función de la librería bnlearn, se selecciona como mejor la primera DAG de las 3 propuestas.
 
 
 
