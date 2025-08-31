@@ -1,0 +1,43 @@
+---
+title: "DAG"
+format: pdf
+editor: visual
+---
+
+
+```{r}
+# Instalar y cargar librerías
+library(bnlearn)
+```
+
+```{r}
+set.seed(1234)
+df = read_csv("~/Desktop/Repositorio/Datos Finales/Data/data_corregido.csv")
+```
+
+
+```{r}
+dag_hc = hc(df)
+```
+
+```{r}
+modelstring(dag_hc)
+```
+
+```{r}
+graphviz.plot(dag_hc, shape = "rectangle")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
