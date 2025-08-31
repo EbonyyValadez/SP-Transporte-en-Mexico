@@ -73,7 +73,14 @@ Se busca comprender si los hombres de edad media y alta, y de estrato social med
 
 ¿Cuál es la probabilidad de que una persona de estrato MedioBajo viva en Aguascalientes dado que se mueve en taxi?
 
-Dado que la base de datos empleada corresponde a una encuesta aplicada en la Zona Metropolitana del Valle de México, se verificó la frecuencia de registros cuya entidad de origen fuera “Aguascalientes” y esta resultó igual a 0. Esto es consistente con el hecho de que las únicas entidades observadas en la variable O (entidad de origen) son “CDMX”, “Hidalgo” y “Edomex”. En consecuencia, dentro de esta base, la probabilidad condicional de que una persona de estrato “MedioBajo” resida en Aguascalientes dado que se desplaza en taxi es 0, es decir:
+En esta consulta, el evento de interés *O* = *Aguascalientes* está fuera del soporte muestral de la base utilizada. La EOD-2017 analizada corresponde a la Zona Metropolitana del Valle de México (ZMVM); en este marco, la variable O (Entidad de origen) solo toma los valores CDMX, Hidalgo y Edomex. Es decir que el dominio observado de (O) es $$ \Omega_O = \{\text{CDMX},\text{Hidalgo},\text{Edomex}\}
+$$por lo que *Aguascalientes* no pertenece al dominio. Esta restricción se confirma con un conteo simple: la frecuencia de registros con *O* = *Aguascalientes* es 0.
+
+Bajo esta situación, la probabilidad condicional solicitada se evalúa como: $$
+P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr)
+=\frac{\#\{O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}
+{\#\{EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}.
+$$Dado que el numerador es 0 (no existen casos con *O* = *Aguascalientes* en la muestra) y el denominador es positivo (sí hay observaciones con *EST* = *MedioBajo* y *T* = *Taxi*), se obtiene:
 
 $$
 P(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\, T=\mathrm{Taxi})=0
