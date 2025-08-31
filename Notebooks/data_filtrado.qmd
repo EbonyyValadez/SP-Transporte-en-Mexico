@@ -10,11 +10,9 @@ data1 = read.csv("../data/ttransporte.csv", stringsAsFactors = TRUE)
 data2 = read.csv("../data/tviaje.csv", stringsAsFactors = TRUE)
 ```
 
-
 ```{r}
 head(data1)
 ```
-
 
 ```{r}
 head(data2)
@@ -23,7 +21,6 @@ head(data2)
 ```{r}
 library(dplyr)
 ```
-
 
 ```{r}
 data3 = read.csv("../data/thogar.csv", stringsAsFactors = TRUE)
@@ -34,12 +31,9 @@ data4 = read.csv("../data/tsdem.csv", stringsAsFactors = TRUE)
 head(data3)
 ```
 
-
 ```{r}
 head(data4)
 ```
-
-
 
 ```{r}
 
@@ -50,7 +44,6 @@ data4_filtrado <- data4[ , !(names(data4) %in% names(data3)[names(data3) != "id_
 unida1 <- inner_join(data3, data4_filtrado, by = "id_hog")
 ```
 
-
 ```{r}
 head(data4_filtrado)
 ```
@@ -58,7 +51,6 @@ head(data4_filtrado)
 ```{r}
 head(unida1)
 ```
-
 
 ```{r}
 # Quitar de unida1 todas las columnas que ya existen en data2 (viaje) (excepto id_soc)
@@ -116,4 +108,3 @@ head(data_final)
 ```{r}
 write.csv(data_final, "../data/data_final.csv", row.names = FALSE)
 ```
-
