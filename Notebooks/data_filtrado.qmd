@@ -1,0 +1,119 @@
+---
+title: "data_filtrado"
+author: "Guzmán"
+format: html
+editor: visual
+---
+
+```{r}
+data1 = read.csv("../data/ttransporte.csv", stringsAsFactors = TRUE)
+data2 = read.csv("../data/tviaje.csv", stringsAsFactors = TRUE)
+```
+
+
+```{r}
+head(data1)
+```
+
+
+```{r}
+head(data2)
+```
+
+```{r}
+library(dplyr)
+```
+
+
+```{r}
+data3 = read.csv("../data/thogar.csv", stringsAsFactors = TRUE)
+data4 = read.csv("../data/tsdem.csv", stringsAsFactors = TRUE)
+```
+
+```{r}
+head(data3)
+```
+
+
+```{r}
+head(data4)
+```
+
+
+
+```{r}
+
+# Quitar de data4 todas las columnas que ya existen en data3 (excepto id_hog)
+data4_filtrado <- data4[ , !(names(data4) %in% names(data3)[names(data3) != "id_hog"]) ]
+
+# Unir sin duplicar columnas
+unida1 <- inner_join(data3, data4_filtrado, by = "id_hog")
+```
+
+
+```{r}
+head(data4_filtrado)
+```
+
+```{r}
+head(unida1)
+```
+
+
+```{r}
+# Quitar de unida1 todas las columnas que ya existen en data2 (viaje) (excepto id_soc)
+unida1_filtrado <- unida1[ , !(names(unida1) %in% names(data2)[names(data2) != "id_soc"]) ]
+
+# Unir sin duplicar columnas
+unida2 <- inner_join(unida1_filtrado, data2, by = "id_soc")
+```
+
+```{r}
+head(unida2)
+```
+
+```{r}
+# Quitar de unida2 todas las columnas que ya existen en data1 (transporte) (excepto id_via)
+unida2_filtrado <- unida2[ , !(names(unida2) %in% names(data1)[names(data1) != "id_via"]) ]
+
+# Unir sin duplicar columnas
+unida3 <- inner_join(unida2_filtrado, data1, by = "id_via")
+```
+
+```{r}
+head(unida3)
+```
+
+```{r}
+vars <- c("sexo","edad","p5_14","estrato","p5_3","ent",
+          "tloc","p5_16_1_1","p2_1_1","niv")
+
+data_final <- unida3 %>% select(any_of(vars))
+```
+
+```{r}
+head(data_final)
+```
+
+```{r}
+# Renombra primero en el df original
+data_final <- data_final %>%
+  rename(
+    transporte         = p5_14,
+    dia_viaje          = p5_3,
+    localidad          = tloc,
+    escolaridad        = niv,
+    tiempo_viaje_horas = p5_16_1_1, 
+    autos_camionetas   = p2_1_1,  
+    entidad_origen     = ent
+  )
+```
+
+```{r}
+head(data_final)
+```
+
+```{r}
+write.csv(data_final, "../data/data_final.csv", row.names = FALSE)
+```
+

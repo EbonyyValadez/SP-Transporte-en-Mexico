@@ -1,0 +1,11 @@
+﻿nombre_campo,longitud,tipo,nemónico,catálogo,rango_claves   
+sexo de la persona,1,C,sexo,sexo,"1,2"
+edad de la persona,2,C,edad,edad,06-99
+5.14 Medio de transporte que utilizó,2,C,transporte,p5_14,01-20
+estrato sociodemográfico,1,C,estrato,estrato,1-4
+5.3 Día de viaje,1,C,dia_viaje,p5_3,"1,2"
+Entidad,2,C,Entidad,ent,01-32
+tamaño de localidad,1,C,localidad,tloc,"1,4"
+Tiempo en horas de viaje,2,C,tiempo_viaje_horas,,"00-23,99"
+¿Cuántos autos o camionetas tienen para transportarse cotidianamente?,1,C,autos_camionetas,p2_1_1,0-8
+Escolaridad,2,C,escolaridad,niv,"00-09,99,b"
