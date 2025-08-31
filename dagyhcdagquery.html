@@ -3111,8 +3111,11 @@ vertical-align: -.125em;
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>datos<span class="ot">=</span><span class="fu">read.csv</span>(<span class="st">&quot;~/SP-Transporte-en-Mexico/data_corregido.csv&quot;</span>,<span class="at">stringsAsFactors =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>datos<span class="ot">=</span><span class="fu">read.csv</span>(<span class="st">&quot;~/SP-Transporte-en-Mexico/data_corregido.csv&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="kable-table">
 <table class="caption-top table table-sm table-striped small">
@@ -3209,67 +3212,67 @@ vertical-align: -.125em;
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sexo</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>S <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>S,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Hombre&quot;</span>, <span class="st">&quot;Mujer&quot;</span>))</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Transporte</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>T <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>T,</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Auto&quot;</span>, <span class="st">&quot;Colectivo&quot;</span>, <span class="st">&quot;TaxiApp&quot;</span>, <span class="st">&quot;TaxiCalle&quot;</span>,</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Metro&quot;</span>, <span class="st">&quot;RTP_M1&quot;</span>, <span class="st">&quot;Bici&quot;</span>, <span class="st">&quot;Autobus&quot;</span>,</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Moto&quot;</span>, <span class="st">&quot;Trolebus&quot;</span>, <span class="st">&quot;Metrobús&quot;</span>,</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;TrenLigero&quot;</span>, <span class="st">&quot;Suburbano&quot;</span>, <span class="st">&quot;Caminar&quot;</span>,</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Mexicable&quot;</span>, <span class="st">&quot;Bicitaxi&quot;</span>, <span class="st">&quot;Mototaxi&quot;</span>,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Escolar&quot;</span>, <span class="st">&quot;Personal&quot;</span>, <span class="st">&quot;Otro&quot;</span>))</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Estrato</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>EST <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>EST,</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bajo&quot;</span>, <span class="st">&quot;MedioBajo&quot;</span>, <span class="st">&quot;MedioAlto&quot;</span>, <span class="st">&quot;Alto&quot;</span>))</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Día de viaje</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>D <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>D,</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Semana&quot;</span>, <span class="st">&quot;FinSemana&quot;</span>))</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Entidad</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>O <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>O,</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">13</span>, <span class="dv">15</span>),</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;CDMX&quot;</span>, <span class="st">&quot;Hidalgo&quot;</span>, <span class="st">&quot;Edomex&quot;</span>))</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Localidad</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>L <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>L,</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Loc_100k+&quot;</span>, <span class="st">&quot;Loc_15k_99k&quot;</span>, <span class="st">&quot;Loc_2.5k_14k&quot;</span>, <span class="st">&quot;Loc_menor2.5k&quot;</span>))</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Autos disponibles</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>V <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>V,</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">8</span>,</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">paste0</span>(<span class="st">&quot;Autos_&quot;</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">8</span>))</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Escolaridad</span></span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>ESC <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>ESC,</span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>                    <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">9</span>, <span class="dv">99</span>),</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Ninguno&quot;</span>, <span class="st">&quot;Preescolar&quot;</span>, <span class="st">&quot;Primaria&quot;</span>, <span class="st">&quot;Secundaria&quot;</span>,</span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;CarrTecSec&quot;</span>, <span class="st">&quot;NormalBas&quot;</span>, <span class="st">&quot;Prepa&quot;</span>, <span class="st">&quot;CarrTecPrepa&quot;</span>,</span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Licenciatura&quot;</span>, <span class="st">&quot;Posgrado&quot;</span>, <span class="st">&quot;NoSabe&quot;</span>))</span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Edad categorizada</span></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>A <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>A,</span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Joven&quot;</span>, <span class="st">&quot;Adulto&quot;</span>, <span class="st">&quot;MedianaEdad&quot;</span>, <span class="st">&quot;AdultoMayor&quot;</span>))</span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Tiempo de viaje (0 = menos de 1h, cualquier otro valor = 1h o más)</span></span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>H <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(datos<span class="sc">$</span>H <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>H <span class="ot">&lt;-</span> <span class="fu">factor</span>(datos<span class="sc">$</span>H,</span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Menos1h&quot;</span>, <span class="st">&quot;1homas&quot;</span>))</span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirmar que todas son factores</span></span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(datos, class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Sexo</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>S <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>S,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Hombre&quot;</span>, <span class="st">&quot;Mujer&quot;</span>))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Transporte</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>T <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>T,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Auto&quot;</span>, <span class="st">&quot;Colectivo&quot;</span>, <span class="st">&quot;TaxiApp&quot;</span>, <span class="st">&quot;TaxiCalle&quot;</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Metro&quot;</span>, <span class="st">&quot;RTP_M1&quot;</span>, <span class="st">&quot;Bici&quot;</span>, <span class="st">&quot;Autobus&quot;</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Moto&quot;</span>, <span class="st">&quot;Trolebus&quot;</span>, <span class="st">&quot;Metrobús&quot;</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;TrenLigero&quot;</span>, <span class="st">&quot;Suburbano&quot;</span>, <span class="st">&quot;Caminar&quot;</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Mexicable&quot;</span>, <span class="st">&quot;Bicitaxi&quot;</span>, <span class="st">&quot;Mototaxi&quot;</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                             <span class="st">&quot;Escolar&quot;</span>, <span class="st">&quot;Personal&quot;</span>, <span class="st">&quot;Otro&quot;</span>))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#Estrato</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>EST <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>EST,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Bajo&quot;</span>, <span class="st">&quot;MedioBajo&quot;</span>, <span class="st">&quot;MedioAlto&quot;</span>, <span class="st">&quot;Alto&quot;</span>))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">#Día de viaje</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>D <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>D,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Semana&quot;</span>, <span class="st">&quot;FinSemana&quot;</span>))</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co">#Entidad</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>O <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>O,</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">13</span>, <span class="dv">15</span>),</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;CDMX&quot;</span>, <span class="st">&quot;Hidalgo&quot;</span>, <span class="st">&quot;Edomex&quot;</span>))</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co">#Localidad</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>L <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>L,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Loc_100k+&quot;</span>, <span class="st">&quot;Loc_15k_99k&quot;</span>, <span class="st">&quot;Loc_2.5k_14k&quot;</span>, <span class="st">&quot;Loc_menor2.5k&quot;</span>))</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co">#Cantidad de vehículos con los que cuentan</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>V <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>V,</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">8</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">paste0</span>(<span class="st">&quot;Autos_&quot;</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">8</span>))</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a><span class="co">#Escolaridad</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>ESC <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>ESC,</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>                    <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">9</span>, <span class="dv">99</span>),</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Ninguno&quot;</span>, <span class="st">&quot;Preescolar&quot;</span>, <span class="st">&quot;Primaria&quot;</span>, <span class="st">&quot;Secundaria&quot;</span>,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;CarrTecSec&quot;</span>, <span class="st">&quot;NormalBas&quot;</span>, <span class="st">&quot;Prepa&quot;</span>, <span class="st">&quot;CarrTecPrepa&quot;</span>,</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Licenciatura&quot;</span>, <span class="st">&quot;Posgrado&quot;</span>, <span class="st">&quot;NoSabe&quot;</span>))</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a><span class="co">#Edad categorizada</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>A <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>A,</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Joven&quot;</span>, <span class="st">&quot;Adulto&quot;</span>, <span class="st">&quot;MedianaEdad&quot;</span>, <span class="st">&quot;AdultoMayor&quot;</span>))</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="co">#Tiempo de viaje (0 = menos de 1h, cualquier otro valor = 1h o más)</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>H <span class="ot">=</span> <span class="fu">ifelse</span>(datos<span class="sc">$</span>H <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>H <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>H,</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Menos1h&quot;</span>, <span class="st">&quot;1homas&quot;</span>))</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a><span class="co">#Confirmar que en todas las variables sus valores sean factores</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(datos, class)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       S        T      EST        D        O        L        V      ESC 
 &quot;factor&quot; &quot;factor&quot; &quot;factor&quot; &quot;factor&quot; &quot;factor&quot; &quot;factor&quot; &quot;factor&quot; &quot;factor&quot; 
@@ -3278,27 +3281,136 @@ vertical-align: -.125em;
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dag1 <span class="ot">=</span> <span class="fu">empty.graph</span>(<span class="at">nodes =</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;D&quot;</span>, <span class="st">&quot;EST&quot;</span>, <span class="st">&quot;V&quot;</span>, <span class="st">&quot;L&quot;</span>, <span class="st">&quot;H&quot;</span>, <span class="st">&quot;O&quot;</span>, <span class="st">&quot;ESC&quot;</span>,<span class="st">&quot;S&quot;</span>,<span class="st">&quot;T&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="kable-table">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 8%">
+<col style="width: 5%">
+<col style="width: 11%">
+<col style="width: 9%">
+<col style="width: 15%">
+<col style="width: 8%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">S</th>
+<th style="text-align: left;">T</th>
+<th style="text-align: left;">EST</th>
+<th style="text-align: left;">D</th>
+<th style="text-align: left;">O</th>
+<th style="text-align: left;">L</th>
+<th style="text-align: left;">V</th>
+<th style="text-align: left;">ESC</th>
+<th style="text-align: left;">A</th>
+<th style="text-align: left;">H</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Hombre</td>
+<td style="text-align: left;">Colectivo</td>
+<td style="text-align: left;">MedioAlto</td>
+<td style="text-align: left;">Semana</td>
+<td style="text-align: left;">CDMX</td>
+<td style="text-align: left;">Loc_100k+</td>
+<td style="text-align: left;">Autos_0</td>
+<td style="text-align: left;">Licenciatura</td>
+<td style="text-align: left;">Adulto</td>
+<td style="text-align: left;">Menos1h</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hombre</td>
+<td style="text-align: left;">Metro</td>
+<td style="text-align: left;">MedioAlto</td>
+<td style="text-align: left;">Semana</td>
+<td style="text-align: left;">CDMX</td>
+<td style="text-align: left;">Loc_100k+</td>
+<td style="text-align: left;">Autos_0</td>
+<td style="text-align: left;">Licenciatura</td>
+<td style="text-align: left;">Adulto</td>
+<td style="text-align: left;">Menos1h</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hombre</td>
+<td style="text-align: left;">Caminar</td>
+<td style="text-align: left;">MedioAlto</td>
+<td style="text-align: left;">Semana</td>
+<td style="text-align: left;">CDMX</td>
+<td style="text-align: left;">Loc_100k+</td>
+<td style="text-align: left;">Autos_0</td>
+<td style="text-align: left;">Licenciatura</td>
+<td style="text-align: left;">Adulto</td>
+<td style="text-align: left;">Menos1h</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hombre</td>
+<td style="text-align: left;">Caminar</td>
+<td style="text-align: left;">MedioAlto</td>
+<td style="text-align: left;">Semana</td>
+<td style="text-align: left;">CDMX</td>
+<td style="text-align: left;">Loc_100k+</td>
+<td style="text-align: left;">Autos_0</td>
+<td style="text-align: left;">Licenciatura</td>
+<td style="text-align: left;">Adulto</td>
+<td style="text-align: left;">Menos1h</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hombre</td>
+<td style="text-align: left;">Colectivo</td>
+<td style="text-align: left;">MedioAlto</td>
+<td style="text-align: left;">Semana</td>
+<td style="text-align: left;">CDMX</td>
+<td style="text-align: left;">Loc_100k+</td>
+<td style="text-align: left;">Autos_0</td>
+<td style="text-align: left;">Licenciatura</td>
+<td style="text-align: left;">Adulto</td>
+<td style="text-align: left;">Menos1h</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Hombre</td>
+<td style="text-align: left;">Metro</td>
+<td style="text-align: left;">MedioAlto</td>
+<td style="text-align: left;">Semana</td>
+<td style="text-align: left;">CDMX</td>
+<td style="text-align: left;">Loc_100k+</td>
+<td style="text-align: left;">Autos_0</td>
+<td style="text-align: left;">Licenciatura</td>
+<td style="text-align: left;">Adulto</td>
+<td style="text-align: left;">Menos1h</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>arc_set1 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">&quot;A&quot;</span>,<span class="st">&quot;ESC&quot;</span>,</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;ESC&quot;</span>,<span class="st">&quot;EST&quot;</span>,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;EST&quot;</span>,<span class="st">&quot;V&quot;</span>,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;V&quot;</span>,<span class="st">&quot;T&quot;</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;T&quot;</span>,<span class="st">&quot;H&quot;</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;S&quot;</span>,<span class="st">&quot;T&quot;</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;D&quot;</span>,<span class="st">&quot;T&quot;</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;O&quot;</span>,<span class="st">&quot;L&quot;</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;L&quot;</span>,<span class="st">&quot;EST&quot;</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;L&quot;</span>,<span class="st">&quot;H&quot;</span>), </span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>,<span class="st">&quot;to&quot;</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dag1 <span class="ot">=</span> <span class="fu">empty.graph</span>(<span class="at">nodes =</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;D&quot;</span>, <span class="st">&quot;EST&quot;</span>, <span class="st">&quot;V&quot;</span>, <span class="st">&quot;L&quot;</span>, <span class="st">&quot;H&quot;</span>, <span class="st">&quot;O&quot;</span>, <span class="st">&quot;ESC&quot;</span>,<span class="st">&quot;S&quot;</span>,<span class="st">&quot;T&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">arcs</span>(dag1) <span class="ot">=</span> arc_set1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>arc_set1 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">&quot;A&quot;</span>,<span class="st">&quot;ESC&quot;</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;ESC&quot;</span>,<span class="st">&quot;EST&quot;</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;EST&quot;</span>,<span class="st">&quot;V&quot;</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;V&quot;</span>,<span class="st">&quot;T&quot;</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;T&quot;</span>,<span class="st">&quot;H&quot;</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;S&quot;</span>,<span class="st">&quot;T&quot;</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;D&quot;</span>,<span class="st">&quot;T&quot;</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;O&quot;</span>,<span class="st">&quot;L&quot;</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;L&quot;</span>,<span class="st">&quot;EST&quot;</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot;L&quot;</span>,<span class="st">&quot;H&quot;</span>), </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>,<span class="st">&quot;to&quot;</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dag1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">arcs</span>(dag1) <span class="ot">=</span> arc_set1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dag1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
   Random/Generated Bayesian network
@@ -3317,7 +3429,7 @@ vertical-align: -.125em;
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(dag1, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">&quot;mi&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(dag1, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">&quot;mi&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="kable-table">
 <table class="caption-top table table-sm table-striped small">
@@ -3385,46 +3497,156 @@ vertical-align: -.125em;
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>bn<span class="ot">=</span><span class="fu">bn.fit</span>(dag1,<span class="at">data=</span>datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>bn<span class="ot">=</span><span class="fu">bn.fit</span>(dag1,<span class="at">data=</span>datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cpquery</span>(bn,</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">event =</span> (T <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Auto&quot;</span>, <span class="st">&quot;Moto&quot;</span>)),</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">evidence =</span> (S <span class="sc">==</span> <span class="st">&quot;Hombre&quot;</span> <span class="sc">&amp;</span> A <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;MedianaEdad&quot;</span>,<span class="st">&quot;AdultoMayor&quot;</span>) <span class="sc">&amp;</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                    EST <span class="sc">==</span> <span class="st">&quot;MedioBajo&quot;</span> <span class="sc">&amp;</span> D <span class="sc">==</span> <span class="st">&quot;Semana&quot;</span>),</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag1, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">&quot;bic&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1119778</code></pre>
+<pre><code>[1] -7863114</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>best_dag <span class="ot">=</span> <span class="fu">hc</span>(datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>best_dag <span class="ot">=</span> <span class="fu">hc</span>(datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>bn<span class="ot">=</span><span class="fu">bn.fit</span>(best_dag,<span class="at">data=</span>datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>bn<span class="ot">=</span><span class="fu">bn.fit</span>(best_dag,<span class="at">data=</span>datos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cpquery</span>(bn,</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">event =</span> (T <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Auto&quot;</span>, <span class="st">&quot;Moto&quot;</span>)),</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">evidence =</span> (S <span class="sc">==</span> <span class="st">&quot;Hombre&quot;</span> <span class="sc">&amp;</span> A <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;MedianaEdad&quot;</span>,<span class="st">&quot;AdultoMayor&quot;</span>) <span class="sc">&amp;</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                    EST <span class="sc">==</span> <span class="st">&quot;MedioBajo&quot;</span> <span class="sc">&amp;</span> D <span class="sc">==</span> <span class="st">&quot;Semana&quot;</span>),</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1108406</code></pre>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(best_dag, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">&quot;mi&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="kable-table">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">from</th>
+<th style="text-align: left;">to</th>
+<th style="text-align: right;">strength</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ESC</td>
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">T</td>
+<td style="text-align: left;">V</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">T</td>
+<td style="text-align: left;">H</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">O</td>
+<td style="text-align: left;">L</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EST</td>
+<td style="text-align: left;">ESC</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">L</td>
+<td style="text-align: left;">EST</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">V</td>
+<td style="text-align: left;">EST</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">V</td>
+<td style="text-align: left;">ESC</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">O</td>
+<td style="text-align: left;">EST</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">EST</td>
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">T</td>
+<td style="text-align: left;">O</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">T</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">T</td>
+<td style="text-align: left;">L</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: left;">T</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">ESC</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">O</td>
+<td style="text-align: left;">H</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">O</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">H</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">S</td>
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(best_dag, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">&quot;bic&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(best_dag, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">&quot;bic&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] -7781807</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(best_dag, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">&quot;aic&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(best_dag, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">&quot;aic&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] -7769003</code></pre>
 </div>
 </div>
+<p>Se puede notar que la DAG generada por Hill Climbing se ajusta mejor con base en los puntajes en las pruebas de comparación con la mejor DAG de las 3 propuestas anteriormente.</p>
 
 </main>
 <!-- /main column -->
