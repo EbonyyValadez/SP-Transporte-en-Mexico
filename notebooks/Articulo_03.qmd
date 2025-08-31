@@ -55,6 +55,10 @@ Este artículo explora estas relaciones de dependencia utilizando la teoría de 
 
 ## Metodología
 
+### Construcción de la base de datos
+
+Se integraron cuatro archivos de la EOD-2017 para la ZMVM (ttransporte, tviaje, thogar y tsdem) mediante uniones internas usando las llaves id_hog, id_soc e id_via, filtrando previamente columnas duplicadas para evitar redundancias. A partir de la tabla unificada se seleccionaron las variables relevantes para las consultas (sexo, edad, p5_14, estrato, p5_3, ent, tloc, p5_16_1_1, p2_1_1 y niv) y se renombraron a descriptores claros: transporte, dia_viaje, localidad, escolaridad, tiempo_viaje_horas, autos_camionetas y entidad_origen (manteniendo sexo, edad y estrato). Como control de calidad, se identificaron códigos no informativos; en particular, el valor 99 en tiempo_viaje_horas (no sabe/no especificado según INEGI) representó \~1.11% de los registros, por lo que se recodificó a NA y se eliminaron esas filas para no sesgar las estimaciones. Dado que el modelo empleado es una red bayesiana discreta, se discretizaron las variables continuas (edad en rangos operativos; tiempo_viaje_horas en Menos1h vs 1homas) y se factorizaron las categóricas conforme a los catálogos oficiales (por ejemplo, transporte con 20 modos; estrato en Bajo/MedioBajo/MedioAlto/Alto; día de viaje en Semana/FinSemana; tamaño de localidad en cuatro niveles; autos disponibles de 0 a 8; escolaridad con sus niveles y “NoSabe”). La variable entidad_origen quedó restringida a CDMX, Hidalgo y Edomex por diseño muestral, lo que implica que cualquier consulta que involucre otra entidad arroja probabilidad muestral cero. Con esta base depurada, discretizada y etiquetada se procedió al aprendizaje de la estructura (DAG), la estimación de las CPTs y la realización de las consultas probabilísticas del estudio.
+
 ## Aplicación
 
 Trabajamos con la EOD-2017 (ZMVM; \~890 000 registros). Las variables consideradas fueron: S (Sexo), A (Edad categorizada), EST (Estrato), T (Transporte), D (Día de viaje), O (Entidad de origen), L (Tamaño de localidad), V (Autos disponibles), ESC (Escolaridad) y H (Duración del viaje). Tras la limpieza de códigos, recodificamos a factores con etiquetas y discretizamos cuando fue necesario (p. ej., H en *Menos1h* vs *1homas*).
@@ -62,6 +66,7 @@ Trabajamos con la EOD-2017 (ZMVM; \~890 000 registros). Las variables considerad
 Modelamos con redes bayesianas discretas. Primero propusimos un DAG sustentado en hipótesis sustantivas; al mismo tiempo, aprendimos una estructura desde los datos mediante hill climbing. Para ambas estructuras ajustamos las tablas de probabilidad condicional (CPTs) con suavizado bayesiano.
 
 La selección del modelo se basó en AIC y BIC, buscando el mejor equilibrio entre ajuste y complejidad. Además, evaluamos dependencias locales con `arc.strength` (información mutua) y pruebas de independencia para identificar arcos débiles o prescindibles.
+
 
 Sobre el modelo seleccionado realizamos las consultas probabilísticas con `cpquery` mediante likelihood weighting, reportando los valores puntuales y señalando las limitaciones muestrales cuando aplicaba.
 
