@@ -19,7 +19,8 @@ set.seed(1234)
 ```
 
 ```{r}
-datos=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv")
+datos=read.csv("data_corregido.csv")
+# datos=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv")
 head(datos)
 ```
 ```{r}
@@ -151,34 +152,16 @@ score(best_dag, data = datos, type = "aic")
 ```
 Se puede notar que la DAG generada por Hill Climbing se ajusta mejor con base en los puntajes en las pruebas de comparación con la mejor DAG de las 3 propuestas anteriormente.
 
-prueba de Query: Rafa
-Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación a las mujeres con las mismas características.
-```{r}
-cpquery(bn,
-        event = (T %in% c("Auto","Moto")),
-        evidence = (S == "Hombre" &
-                    A %in% c("MedianaEdad","AdultoMayor") &
-                    EST == "MedioBajo" &
-                    D == "Semana"),
-        n = 10^6)
-```
-```{r}
-cpquery(bn,
-        event = (T %in% c("Auto","Moto")),
-        evidence = (S == "Mujer" &
-                    A %in% c("MedianaEdad","AdultoMayor") &
-                    EST == "MedioBajo" &
-                    D == "Semana"),
-        n = 10^6)
-```
+prueba de Query: Guzmán 4
+
+¿Cuál es la probabilidad de que una persona tenga al menos un auto o camioneta dado que su nivel de escolaridad es primaria o preescolar?
 
 ```{r}
-cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Hombre")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), n = 10^6)
-```
-```{r}
-cpquery(bn, 
-        event = ((T=="Moto")|(T=="Auto")), 
-        evidence = (((S=="Mujer")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Mujer")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), 
+cpquery(bn,
+        event = (V != "Autos_0"),
+        evidence = ( (ESC == "Preescolar") | (ESC == "Primaria")),
         n = 10^6)
+
 ```
-Respuesta: sí, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.
+
+Respuesta: La probabilidad estimada de que una persona con nivel de escolaridad primaria o preescolar tenga al menos un auto o camioneta es aproximadamente 29.2%.
