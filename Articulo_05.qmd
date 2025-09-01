@@ -65,17 +65,22 @@ Se integraron cuatro archivos de la EOD-2017 para la ZMVM (ttransporte, tviaje, 
 #| eval: false
 install.packages("bnlearn")
 ```
+
 ```{r}
 library(bnlearn)
 ```
+
 ```{r}
 set.seed(1234)
 ```
+
 ```{r}
 datos=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv")
 head(datos)
 ```
+
 Una vez llamada la base de datos, se crea un diccionario y se cambian los valores de las variables a datos de tipo factor, así como al significado correspondiente en texto para un manejo de los datos más sencillo.
+
 ```{r}
 #Sexo
 datos$S = factor(datos$S,
@@ -139,27 +144,30 @@ datos$H = factor(datos$H,
 #Confirmar que en todas las variables sus valores sean factores
 sapply(datos, class)
 ```
+
 ```{r}
 head(datos)
 ```
 
 Posteriormente, se propusieron 3 DAGs diferentes con base en las relaciones entre las variables que se consideraron de mayor impacto, denotando nodos con sus respectivos arcos, así como las relaciones de dependencia. Asimismo, para el manejo de la DAG se asignó una clave corta a cada variable:
 
-- **A** = edad_cat  
-- **D** = dia_viaje  
-- **EST** = estrato  
-- **V** = autos_camionetas  
-- **L** = localidad  
-- **H** = tiempo_cat  
-- **O** = Entidad  
-- **ESC** = escolaridad  
-- **S** = sexo  
-- **T** = transporte  
+-   **A** = edad_cat\
+-   **D** = dia_viaje\
+-   **EST** = estrato\
+-   **V** = autos_camionetas\
+-   **L** = localidad\
+-   **H** = tiempo_cat\
+-   **O** = Entidad\
+-   **ESC** = escolaridad\
+-   **S** = sexo\
+-   **T** = transporte
 
 La DAG 1 se formula con base en que la edad determina la educación y ésta se relaciona con el estrato sociodemográfico de la perosna y el tipo de transporte que utiliza, así como arcos en función de cuestiones geográficas y el tiempo de traslado, así como quizá el sexo interfiera con el medio de transporte.
+
 ```{r}
 dag1 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
+
 ```{r}
 arc_set1 = matrix(c("A","ESC",
                    "ESC","EST",
@@ -174,12 +182,15 @@ arc_set1 = matrix(c("A","ESC",
                  byrow = TRUE, ncol = 2,
                  dimnames = list(NULL, c("from","to")))
 ```
+
 ```{r}
 arcs(dag1) = arc_set1
 ```
+
 ```{r}
 dag1
 ```
+
 ```{r}
 graphviz.plot(dag1, shape = "rectangle")
 ```
@@ -188,9 +199,11 @@ graphviz.plot(dag1, shape = "rectangle")
 bn_mle=bn.fit(dag1,data=datos, method='mle')
 arc.strength(dag1, data = datos, criterion = "mi")
 ```
+
 Se observa cómo las relaciones de dependencia son bastante débiles, siendo la mayor la relación entre la localidad de la persona con respecto a las horas que tarda en el transporte; sin embargo, aún sigue siendo muy baja.
 
 La segunda DAG propuesta se centra principalmente en el entorno geográfico, es decir, que del lugar de origen o la localidad se relacionan el estrato, el tiempo del viaje, la cantidad de vehículos, así como otras relaciones entre el sexo y la edad para determinar la escolaridad y el medio de transporte.
+
 ```{r}
 dag2 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
@@ -210,19 +223,24 @@ arc_set2 = matrix(c("O","L",
                  byrow = TRUE, ncol = 2,
                  dimnames = list(NULL, c("from","to")))
 ```
+
 ```{r}
 arcs(dag2) = arc_set2
 ```
+
 ```{r}
 dag2
 ```
+
 ```{r}
 graphviz.plot(dag2, shape = "rectangle")
 ```
+
 ```{r}
 bn_mle=bn.fit(dag2,data=datos, method='mle')
 arc.strength(dag2, data = datos, criterion = "mi")
 ```
+
 Nuevamente, al analizar las relaciones de dependencia entre las variables, se observa que la dependecia más fuerte va desde el nodo **L** al nodo **H**.
 
 Por último, la tercera DAG se basa principalmente en factores personales como los determinantes de mayor impacto. Teniendo como nodos padres e independientes la edad y el sexo, y que a partir de éstos se condicionen otros aspectos relacionados con la movilidad de las personas, su escolaridad y el estrato en el que se encuentran.
@@ -230,6 +248,7 @@ Por último, la tercera DAG se basa principalmente en factores personales como l
 ```{r}
 dag3 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
 ```
+
 ```{r}
 arc_set3 = matrix(c("A","ESC",
                    "ESC","EST",
@@ -245,6 +264,7 @@ arc_set3 = matrix(c("A","ESC",
                  byrow = TRUE, ncol = 2,
                  dimnames = list(NULL, c("from","to")))
 ```
+
 ```{r}
 arcs(dag3) = arc_set3
 dag3
@@ -253,10 +273,12 @@ dag3
 ```{r}
 graphviz.plot(dag3, shape = "rectangle")
 ```
+
 ```{r}
 bn_mle=bn.fit(dag3,data=datos, method='mle')
 arc.strength(dag3, data = datos, criterion = "mi")
 ```
+
 En la tercera DAG destacan las relaciones de dependencia de **A** a **V**, relacionando la edad de la persona con la cantidad de vehículos en su hogar, así como de **L** a **T**, asociando la localidad con el tipo de transporte que utiliza.
 
 ### Selección de la DAG
@@ -264,40 +286,56 @@ En la tercera DAG destacan las relaciones de dependencia de **A** a **V**, relac
 Una vez que ya se plantearon las 3 DAGs propuestas, se comparan sus network scores para determinar cuál de las 3 es la que mejor refleja la estrucutra de dependencia de los datos, para esto se usan las pruebas **BIC** (Bayesian Information Criterion) y **AIC** (Akaike Information Criterion).
 
 El puntaje de la prueba BIC en la primera DAG es:
+
 ```{r}
 score(dag1, data = datos, type = "bic")
 ```
+
 El puntaje de la prueba AIC en la primera DAG es:
+
 ```{r}
 score(dag1, data = datos, type = "aic")
 ```
+
 El puntaje de la prueba BIC en la segunda DAG es:
+
 ```{r}
 score(dag2, data = datos, type = "bic")
 ```
+
 El puntaje de la prueba AIC en la segunda DAG es:
+
 ```{r}
 score(dag2, data = datos, type = "aic")
 ```
+
 El puntaje de la prueba BIC en la tercera DAG es:
+
 ```{r}
 score(dag3, data = datos, type = "bic")
 ```
+
 El puntaje de la prueba AIC en la tercera DAG es:
+
 ```{r}
 score(dag3, data = datos, type = "aic")
 ```
+
 Dado que la primera DAG es la que tiene un mayor puntaje (dentro de la librería bnlearn aquella con mejor ajuste es la que tiene mayor puntaje) en ambas pruebas, entonces es la red que se ajusta mejor a los datos.
 
 De igual forma, se emplea el algoritmo **hill-climbing** para obtener la mejor estructura de la DAG en función de la base de datos.
+
 ```{r}
 best_dag = hc(datos)
 modelstring(best_dag)
 ```
+
 ```{r}
 bn=bn.fit(best_dag,data=datos)
 ```
+
 La cual se ve de la siguiente manera, con los arcos creando las relaciones de dependencia de sus determinados nodos.
+
 ```{r}
 graphviz.plot(best_dag, shape = "rectangle")
 ```
@@ -305,16 +343,21 @@ graphviz.plot(best_dag, shape = "rectangle")
 ```{r}
 arc.strength(best_dag, data = datos, criterion = "mi")
 ```
+
 En esta nueva DAG generada por el algoritmo hill-climbing la fuerza entre los nodos varía, siendo en la mayoría de 0; sin embargo, hay algunas otras relaciones más fuertes como el sexo con si se transportan entre semana o no, o el tiempo que tardan, aunque otras lógicamente no hacen sentido, tal como el sexo con la entidad de origen.
 
 El puntaje en la prueba BIC de la nueva DAG es:
+
 ```{r}
 score(best_dag, data = datos, type = "bic")
 ```
+
 El puntaje en la prueba AIC de la nueva DAG es:
+
 ```{r}
 score(best_dag, data = datos, type = "aic")
 ```
+
 Se observa que la nueva DAG determinada por hill-climbing tiene un mejor ajuste de su red en la relación de los datos y sus respectivas variables, ya que tiene un puntaje mayor. Por tal motivo, se llevarán a cabo las queries con base en **best_dag**.
 
 ## Aplicación
@@ -331,9 +374,7 @@ Sobre el modelo seleccionado realizamos las consultas probabilísticas con `cpqu
 
 Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.
 
-
-El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es:
-$$
+El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es: $$
 P(T \in \{\text{Auto},\text{Moto}\} \mid 
 S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
 A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
@@ -345,8 +386,8 @@ $$
 ```{r}
 cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Hombre")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), n = 10^6)
 ```
-Para analizar este mismo evento, pero ahora con mujeres, únicamente (**S=="Mujer"**) y ahora la probabilidad es:
-$$
+
+Para analizar este mismo evento, pero ahora con mujeres, únicamente (**S=="Mujer"**) y ahora la probabilidad es: $$
 P(T \in \{\text{Auto},\text{Moto}\} \mid 
 S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
 A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
@@ -361,6 +402,7 @@ cpquery(bn,
         evidence = (((S=="Mujer")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Mujer")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), 
         n = 10^6)
 ```
+
 En conclusión, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.
 
 ### Probabilidad de residir en Aguascalientes dado taxi {#q2}
@@ -385,6 +427,67 @@ Es importante mencionar que se trata de una imposibilidad muestral por ausencia 
 ### Duración \>1 h por tamaño de localidad y modo {#q3}
 
 Nos interesa saber si es más probable que las personas de localidades \< 2,500 habitantes realicen viajes de más de 1 hora en automóvil, colectivo/micro, metro, autobús, trolebús, tren ligero, tren suburbano o transporte de personal, en comparación con las personas de localidades \> 100,000 habitantes que cumplan con las mismas características.
+
+Para responder lo anterior, se toma en cuenta el evento de interés *H* = "1homas" (tiempo de viaje mayor o igual a una hora), condicionado a dos tipos de evidencia:
+
+1.  **Localidad** (*L*): se encuentran las siguientes categorías
+
+    $$
+    \Omega_L = \{\text{Loc\_100k+}, \text{Loc\_15k\_99k}, \text{Loc\_2.5k\_14k}, \text{Loc\_menor2.5k}\}
+    $$
+
+2.  **Medio de transporte** (*T*): se toman en cuenta solo los medios de interés
+
+    $$
+    \{\text{Auto}, \text{Colectivo}, \text{Metro}, \text{Autobus}, \text{Trolebus}, \text{TrenLigero}, \text{Suburbano}, \text{Personal}\}
+    $$
+
+Entonces, la probabilidad condicional es la siguiente:
+
+$$
+P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\})
+= \frac{\#\{H=\mathrm{1homas}, L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}\}}
+{\#\{L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}\}}
+$$
+
+y de la misma manera para $L = \mathrm{Loc\_100k+}$.
+
+```{r}
+# definir los transportes de interes
+transportes_interes <- c("Auto", "Colectivo", "Metro", "Autobus",
+                         "Trolebus", "TrenLigero", "Suburbano", "Personal")
+```
+
+```{r}
+# P para localidades menores a 2500 habitantes
+p_loc_menor2500 <- cpquery(
+  bn,
+  event = (H == "1homas"),
+  evidence = (L == "Loc_menor2.5k" & T %in% transportes_interes),
+  n = 10^6
+)
+p_loc_menor2500
+```
+
+```{r}
+# P de localidades mayores a 100000 habitantes
+p_loc_mayor100k <- cpquery(
+  bn,
+  event = (H == "1homas"),
+  evidence = (L == "Loc_100k+" & T %in% transportes_interes),
+  n = 10^6
+)
+p_loc_mayor100k
+```
+
+Los resultados obtenidos con $n=10^6$ simulaciones fueron:
+
+-   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}) \approx 0.188$
+-   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_100k+}, T \in \{\dots\}) \approx 0.203$
+
+Es decir, bajo el modelo de redes bayesianas, la probabilidad de realizar viajes de una hora o más es ligeramente **mayor en localidades grandes (100k+) que en las localidades muy pequeñas (\<2.5k)**.
+
+Así, se observa que la probabilidad de que las personas de una localidad chica hagan más de una hora de viaje en los medios de transporte de interés es menor a la probabilidad de las personas de localidades con más habitantes. Entonces, las personas en localidades grandes tienen ligeramente más probabilidad de hacer viajes largos, que duren más de una hora, que las de localidades muy pequeñas.
 
 ### Autos/camionetas y escolaridad {#q4}
 
