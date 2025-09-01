@@ -482,8 +482,8 @@ p_loc_mayor100k
 
 Los resultados obtenidos con $n=10^6$ simulaciones fueron:
 
--   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}) \approx 0.188$
--   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_100k+}, T \in \{\dots\}) \approx 0.203$
+-   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}) \approx 0.18$
+-   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_100k+}, T \in \{\dots\}) \approx 0.20$
 
 Es decir, bajo el modelo de redes bayesianas, la probabilidad de realizar viajes de una hora o más es ligeramente **mayor en localidades grandes (100k+) que en las localidades muy pequeñas (\<2.5k)**.
 
