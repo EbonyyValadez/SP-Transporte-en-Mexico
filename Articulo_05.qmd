@@ -137,16 +137,17 @@ head(datos)
 ```
 
 Posteriormente, se propusieron 3 DAGs diferentes con base en las relaciones entre las variables que se consideraron de mayor impacto, denotando nodos con sus respectivos arcos, así como las relaciones de dependencia. Asimismo, para el manejo de la DAG se asignó una clave corta a cada variable:
-    A = edad_cat,
-    D = dia_viaje,
-    EST = estrato,
-    V = autos_camionetas,
-    L = localidad,
-    H = tiempo_cat,     
-    O = Entidad,        
-    ESC = escolaridad,
-    S = sexo,
-    T = transporte
+
+- **A** = edad_cat  
+- **D** = dia_viaje  
+- **EST** = estrato  
+- **V** = autos_camionetas  
+- **L** = localidad  
+- **H** = tiempo_cat  
+- **O** = Entidad  
+- **ESC** = escolaridad  
+- **S** = sexo  
+- **T** = transporte  
 
 La DAG 1 se formula con base en que la edad determina la educación y ésta se relaciona con el estrato sociodemográfico de la perosna y el tipo de transporte que utiliza, así como arcos en función de cuestiones geográficas y el tiempo de traslado, así como quizá el sexo interfiera con el medio de transporte.
 ```{r}
@@ -306,6 +307,7 @@ El puntaje en la prueba AIC de la nueva DAG es:
 score(best_dag, data = datos, type = "aic")
 ```
 Se observa que la nueva DAG determinada por hill-climbing tiene un mejor ajuste de su red en la relación de los datos y sus respectivas variables, ya que tiene un puntaje mayor. Por tal motivo, se llevarán a cabo las queries con base en **best_dag**.
+
 ## Aplicación
 
 Trabajamos con la EOD-2017 (ZMVM; \~890 000 registros). Las variables consideradas fueron: S (Sexo), A (Edad categorizada), EST (Estrato), T (Transporte), D (Día de viaje), O (Entidad de origen), L (Tamaño de localidad), V (Autos disponibles), ESC (Escolaridad) y H (Duración del viaje). Tras la limpieza de códigos, recodificamos a factores con etiquetas y discretizamos cuando fue necesario (p. ej., H en *Menos1h* vs *1homas*).
@@ -319,6 +321,38 @@ Sobre el modelo seleccionado realizamos las consultas probabilísticas con `cpqu
 ### Uso de auto/moto por sexo y edad (entre semana) {#q1}
 
 Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.
+
+
+El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es:
+$$
+P(T \in \{\text{Auto},\text{Moto}\} \mid 
+S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
+A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
+=
+\frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
+{\#\{S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+$$
+
+```{r}
+cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Hombre")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), n = 10^6)
+```
+Para analizar este mismo evento, pero ahora con mujeres, únicamente (**S=="Mujer"**) y ahora la probabilidad es:
+$$
+P(T \in \{\text{Auto},\text{Moto}\} \mid 
+S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
+A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
+=
+\frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
+{\#\{S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+$$
+
+```{r}
+cpquery(bn, 
+        event = ((T=="Moto")|(T=="Auto")), 
+        evidence = (((S=="Mujer")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Mujer")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), 
+        n = 10^6)
+```
+En conclusión, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.
 
 ### Probabilidad de residir en Aguascalientes dado taxi {#q2}
 

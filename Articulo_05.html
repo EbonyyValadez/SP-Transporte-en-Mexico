@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jessica Dong">
+<meta name="author" content="Ebony Valadez">
+<meta name="author" content="Emiliano Guzmán">
+<meta name="author" content="Rafael Gutiérrez">
+<meta name="keywords" content="redes bayesianas, bnlearn, movilidad, discretización">
+
+<title>Redes Bayesianas para el transporte</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Articulo_05_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Articulo_05_files/libs/quarto-html/quarto.js"></script>
+<script src="Articulo_05_files/libs/quarto-html/popper.min.js"></script>
+<script src="Articulo_05_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Articulo_05_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Articulo_05_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Articulo_05_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Articulo_05_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Articulo_05_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Articulo_05_files/libs/bootstrap/bootstrap-32162a2fca7cb0439643f2faaab1edf3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="Articulo_05_files/libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+
+<script src="Articulo_05_files/libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Tabla de contenidos</h2>
+   
+  <ul>
+  <li><a href="#introducción" id="toc-introducción" class="nav-link active" data-scroll-target="#introducción"><span class="header-section-number">1</span> Introducción</a></li>
+  <li><a href="#metodología" id="toc-metodología" class="nav-link" data-scroll-target="#metodología"><span class="header-section-number">2</span> Metodología</a></li>
+  <li><a href="#aplicación" id="toc-aplicación" class="nav-link" data-scroll-target="#aplicación"><span class="header-section-number">3</span> Aplicación</a>
+  <ul class="collapse">
+  <li><a href="#q1" id="toc-q1" class="nav-link" data-scroll-target="#q1"><span class="header-section-number">3.1</span> Uso de auto/moto por sexo y edad (entre semana)</a></li>
+  <li><a href="#q2" id="toc-q2" class="nav-link" data-scroll-target="#q2"><span class="header-section-number">3.2</span> Probabilidad de residir en Aguascalientes dado taxi</a></li>
+  <li><a href="#q3" id="toc-q3" class="nav-link" data-scroll-target="#q3"><span class="header-section-number">3.3</span> Duración &gt;1 h por tamaño de localidad y modo</a></li>
+  <li><a href="#q4" id="toc-q4" class="nav-link" data-scroll-target="#q4"><span class="header-section-number">3.4</span> Autos/camionetas y escolaridad</a></li>
+  </ul></li>
+  <li><a href="#conclusiones" id="toc-conclusiones" class="nav-link" data-scroll-target="#conclusiones"><span class="header-section-number">4</span> Conclusiones</a></li>
+  <li><a href="#referencias" id="toc-referencias" class="nav-link" data-scroll-target="#referencias"><span class="header-section-number">5</span> Referencias</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Otros formatos</h2><ul><li><a href="Articulo_05.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Redes Bayesianas para el transporte</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Código</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Autores/as</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jessica Dong </p>
+             <p>Ebony Valadez </p>
+             <p>Emiliano Guzmán </p>
+             <p>Rafael Gutiérrez </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Fecha de publicación</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">31 de agosto de 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="block-title">Resumen</div>
+    <p>Este estudio utiliza la Encuesta Origen-Destino del INEGI realizada en 2017 para analizar los patrones de movilidad de los ciudadanos en la Ciudad de México. Mediante el uso de la teoría de redes bayesianas, se construye un modelo probabilístico a partir de los datos de la encuesta para analizar las relaciones entre las variables sociodemográficas y de transporte. Se proponen y evalúan diferentes estructuras de Redes Acíclicas Dirigidas (DAGs) para representar estas dependencias. Los resultados del análisis permiten responder a preguntas clave sobre la movilidad. Se busca resaltar la importancia de los modelos probabilísticos para comprender la complejidad de los modelos de transporte en las ciudades mexicanas, con el objetivo de brindar información útil para la planeación de políticas públicas relacionadas con el transporte.</p>
+  </div>
+</div>
+
+<div>
+  <div class="keywords">
+    <div class="block-title">Palabras clave</div>
+    <p>redes bayesianas, bnlearn, movilidad, discretización</p>
+  </div>
+</div>
+
+</header>
+
+
+<section id="introducción" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="introducción"><span class="header-section-number">1</span> Introducción</h2>
+<p>La movilidad urbana es un aspecto fundamental para el desarrollo socioeconómico de las ciudades modernas, ya que esta influye de manera significativa en la calidad de vida de sus habitantes, el medio ambiente y la economía de cada una. En la Zona Metropolitana del Valle de México, esto presenta una gran complejidad debido a su tamaño, densidad de población y red de transporte. Comprender los patrones de viaje y los factores que influyen en la toma de decisiones de los ciudadanos es crucial para el diseño de políticas públicas más efectivas y sostenibles.</p>
+<p>La Encuesta Origen-Destino en Hogares (EOD) 2017, realizada por el Instituto Nacional de Estadística y Geografía (INEGI) en colaboración con el Instituto de Ingeniería de la UNAM, fue la fuente de datos más importante para este proyecto. A partir de esta encuesta, se obtuvo información que muestra los patrones de movilidad cotidiana de los habitantes de la Ciudad de México y las características de los viajes que estos realizan. Mediante estos datos, es posible analizar las relaciones entre variables sociodemográficas (como género, edad e ingresos) y las decisiones de transporte (como el medio utilizado, la duración y el motivo del viaje) [1].</p>
+<p>Este artículo explora estas relaciones de dependencia utilizando la teoría de las <strong>redes bayesianas</strong>. Este enfoque permite modelar la estructura de dependencia probabilística entre múltiples variables, lo que es bastante útil para analizar fenómenos complejos como la movilidad urbana. El objetivo de este estudio es es construir y comparar diferentes modelos de Redes Acíclicas Dirigidas (DAGs) que representen las relaciones entre las variables de la encuesta mencionada; para posteriormente, responder preguntas de investigación específicas acerca de la movilidad en la ZMVM.</p>
+</section>
+<section id="metodología" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="metodología"><span class="header-section-number">2</span> Metodología</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["S"],"name":[1],"type":["int"],"align":["right"]},{"label":["T"],"name":[2],"type":["int"],"align":["right"]},{"label":["EST"],"name":[3],"type":["int"],"align":["right"]},{"label":["D"],"name":[4],"type":["int"],"align":["right"]},{"label":["O"],"name":[5],"type":["int"],"align":["right"]},{"label":["L"],"name":[6],"type":["int"],"align":["right"]},{"label":["V"],"name":[7],"type":["int"],"align":["right"]},{"label":["ESC"],"name":[8],"type":["int"],"align":["right"]},{"label":["A"],"name":[9],"type":["int"],"align":["right"]},{"label":["H"],"name":[10],"type":["int"],"align":["right"]}],"data":[{"1":"1","2":"2","3":"3","4":"1","5":"9","6":"1","7":"0","8":"8","9":"2","10":"0","_rn_":"1"},{"1":"1","2":"5","3":"3","4":"1","5":"9","6":"1","7":"0","8":"8","9":"2","10":"0","_rn_":"2"},{"1":"1","2":"14","3":"3","4":"1","5":"9","6":"1","7":"0","8":"8","9":"2","10":"0","_rn_":"3"},{"1":"1","2":"14","3":"3","4":"1","5":"9","6":"1","7":"0","8":"8","9":"2","10":"0","_rn_":"4"},{"1":"1","2":"2","3":"3","4":"1","5":"9","6":"1","7":"0","8":"8","9":"2","10":"0","_rn_":"5"},{"1":"1","2":"5","3":"3","4":"1","5":"9","6":"1","7":"0","8":"8","9":"2","10":"0","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>Una vez llamada la base de datos, se crea un diccionario y se cambian los valores de las variables a datos de tipo factor, así como al significado correspondiente en texto para un manejo de los datos más sencillo.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>       S        T      EST        D        O        L        V      ESC 
+"factor" "factor" "factor" "factor" "factor" "factor" "factor" "factor" 
+       A        H 
+"factor" "factor" </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["S"],"name":[1],"type":["fct"],"align":["left"]},{"label":["T"],"name":[2],"type":["fct"],"align":["left"]},{"label":["EST"],"name":[3],"type":["fct"],"align":["left"]},{"label":["D"],"name":[4],"type":["fct"],"align":["left"]},{"label":["O"],"name":[5],"type":["fct"],"align":["left"]},{"label":["L"],"name":[6],"type":["fct"],"align":["left"]},{"label":["V"],"name":[7],"type":["fct"],"align":["left"]},{"label":["ESC"],"name":[8],"type":["fct"],"align":["left"]},{"label":["A"],"name":[9],"type":["fct"],"align":["left"]},{"label":["H"],"name":[10],"type":["fct"],"align":["left"]}],"data":[{"1":"Hombre","2":"Colectivo","3":"MedioAlto","4":"Semana","5":"CDMX","6":"Loc_100k+","7":"Autos_0","8":"Licenciatura","9":"Adulto","10":"Menos1h","_rn_":"1"},{"1":"Hombre","2":"Metro","3":"MedioAlto","4":"Semana","5":"CDMX","6":"Loc_100k+","7":"Autos_0","8":"Licenciatura","9":"Adulto","10":"Menos1h","_rn_":"2"},{"1":"Hombre","2":"Caminar","3":"MedioAlto","4":"Semana","5":"CDMX","6":"Loc_100k+","7":"Autos_0","8":"Licenciatura","9":"Adulto","10":"Menos1h","_rn_":"3"},{"1":"Hombre","2":"Caminar","3":"MedioAlto","4":"Semana","5":"CDMX","6":"Loc_100k+","7":"Autos_0","8":"Licenciatura","9":"Adulto","10":"Menos1h","_rn_":"4"},{"1":"Hombre","2":"Colectivo","3":"MedioAlto","4":"Semana","5":"CDMX","6":"Loc_100k+","7":"Autos_0","8":"Licenciatura","9":"Adulto","10":"Menos1h","_rn_":"5"},{"1":"Hombre","2":"Metro","3":"MedioAlto","4":"Semana","5":"CDMX","6":"Loc_100k+","7":"Autos_0","8":"Licenciatura","9":"Adulto","10":"Menos1h","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>Posteriormente, se propusieron 3 DAGs diferentes con base en las relaciones entre las variables que se consideraron de mayor impacto, denotando nodos con sus respectivos arcos, así como las relaciones de dependencia. Asimismo, para el manejo de la DAG se asignó una clave corta a cada variable:</p>
+<ul>
+<li><strong>A</strong> = edad_cat<br>
+</li>
+<li><strong>D</strong> = dia_viaje<br>
+</li>
+<li><strong>EST</strong> = estrato<br>
+</li>
+<li><strong>V</strong> = autos_camionetas<br>
+</li>
+<li><strong>L</strong> = localidad<br>
+</li>
+<li><strong>H</strong> = tiempo_cat<br>
+</li>
+<li><strong>O</strong> = Entidad<br>
+</li>
+<li><strong>ESC</strong> = escolaridad<br>
+</li>
+<li><strong>S</strong> = sexo<br>
+</li>
+<li><strong>T</strong> = transporte</li>
+</ul>
+<p>La DAG 1 se formula con base en que la edad determina la educación y ésta se relaciona con el estrato sociodemográfico de la perosna y el tipo de transporte que utiliza, así como arcos en función de cuestiones geográficas y el tiempo de traslado, así como quizá el sexo interfiera con el medio de transporte.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  Random/Generated Bayesian network
+
+  model:
+   [A][D][O][S][L|O][ESC|A][EST|L:ESC][V|EST][T|D:V:S][H|L:T] 
+  nodes:                                 10 
+  arcs:                                  10 
+    undirected arcs:                     0 
+    directed arcs:                       10 
+  average markov blanket size:           3.00 
+  average neighbourhood size:            2.00 
+  average branching factor:              1.00 
+
+  generation algorithm:                  Empty </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Articulo_05_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["from"],"name":[1],"type":["chr"],"align":["left"]},{"label":["to"],"name":[2],"type":["chr"],"align":["left"]},{"label":["strength"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"A","2":"ESC","3":"0.000000e+00","_rn_":"1"},{"1":"ESC","2":"EST","3":"0.000000e+00","_rn_":"2"},{"1":"EST","2":"V","3":"0.000000e+00","_rn_":"3"},{"1":"V","2":"T","3":"0.000000e+00","_rn_":"4"},{"1":"T","2":"H","3":"0.000000e+00","_rn_":"5"},{"1":"S","2":"T","3":"0.000000e+00","_rn_":"6"},{"1":"D","2":"T","3":"0.000000e+00","_rn_":"7"},{"1":"O","2":"L","3":"0.000000e+00","_rn_":"8"},{"1":"L","2":"EST","3":"0.000000e+00","_rn_":"9"},{"1":"L","2":"H","3":"3.083883e-150","_rn_":"10"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>Se observa cómo las relaciones de dependencia son bastante débiles, siendo la mayor la relación entre la localidad de la persona con respecto a las horas que tarda en el transporte; sin embargo, aún sigue siendo muy baja.</p>
+<p>La segunda DAG propuesta se centra principalmente en el entorno geográfico, es decir, que del lugar de origen o la localidad se relacionan el estrato, el tiempo del viaje, la cantidad de vehículos, así como otras relaciones entre el sexo y la edad para determinar la escolaridad y el medio de transporte.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  Random/Generated Bayesian network
+
+  model:
+   [A][D][O][S][L|O][ESC|A][EST|L][H|D:L:O][V|EST][T|EST:V:ESC:S] 
+  nodes:                                 10 
+  arcs:                                  11 
+    undirected arcs:                     0 
+    directed arcs:                       11 
+  average markov blanket size:           3.60 
+  average neighbourhood size:            2.20 
+  average branching factor:              1.10 
+
+  generation algorithm:                  Empty </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Articulo_05_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["from"],"name":[1],"type":["chr"],"align":["left"]},{"label":["to"],"name":[2],"type":["chr"],"align":["left"]},{"label":["strength"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"O","2":"L","3":"0.000000e+00","_rn_":"1"},{"1":"L","2":"EST","3":"0.000000e+00","_rn_":"2"},{"1":"EST","2":"T","3":"0.000000e+00","_rn_":"3"},{"1":"O","2":"H","3":"0.000000e+00","_rn_":"4"},{"1":"L","2":"H","3":"2.481191e-195","_rn_":"5"},{"1":"EST","2":"V","3":"0.000000e+00","_rn_":"6"},{"1":"V","2":"T","3":"0.000000e+00","_rn_":"7"},{"1":"S","2":"T","3":"0.000000e+00","_rn_":"8"},{"1":"A","2":"ESC","3":"0.000000e+00","_rn_":"9"},{"1":"ESC","2":"T","3":"0.000000e+00","_rn_":"10"},{"1":"D","2":"H","3":"2.270633e-35","_rn_":"11"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>Nuevamente, al analizar las relaciones de dependencia entre las variables, se observa que la dependecia más fuerte va desde el nodo <strong>L</strong> al nodo <strong>H</strong>.</p>
+<p>Por último, la tercera DAG se basa principalmente en factores personales como los determinantes de mayor impacto. Teniendo como nodos padres e independientes la edad y el sexo, y que a partir de éstos se condicionen otros aspectos relacionados con la movilidad de las personas, su escolaridad y el estrato en el que se encuentran.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  Random/Generated Bayesian network
+
+  model:
+   [A][D][O][S][V|A][L|O][ESC|A][EST|ESC][T|D:EST:V:L:S][H|L:T] 
+  nodes:                                 10 
+  arcs:                                  11 
+    undirected arcs:                     0 
+    directed arcs:                       11 
+  average markov blanket size:           4.20 
+  average neighbourhood size:            2.20 
+  average branching factor:              1.10 
+
+  generation algorithm:                  Empty </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Articulo_05_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["from"],"name":[1],"type":["chr"],"align":["left"]},{"label":["to"],"name":[2],"type":["chr"],"align":["left"]},{"label":["strength"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"A","2":"ESC","3":"0.000000e+00","_rn_":"1"},{"1":"ESC","2":"EST","3":"0.000000e+00","_rn_":"2"},{"1":"EST","2":"T","3":"0.000000e+00","_rn_":"3"},{"1":"T","2":"H","3":"0.000000e+00","_rn_":"4"},{"1":"S","2":"T","3":"0.000000e+00","_rn_":"5"},{"1":"A","2":"V","3":"4.784198e-248","_rn_":"6"},{"1":"V","2":"T","3":"0.000000e+00","_rn_":"7"},{"1":"O","2":"L","3":"0.000000e+00","_rn_":"8"},{"1":"L","2":"T","3":"4.880149e-218","_rn_":"9"},{"1":"D","2":"T","3":"0.000000e+00","_rn_":"10"},{"1":"L","2":"H","3":"3.083883e-150","_rn_":"11"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>En la tercera DAG destacan las relaciones de dependencia de <strong>A</strong> a <strong>V</strong>, relacionando la edad de la persona con la cantidad de vehículos en su hogar, así como de <strong>L</strong> a <strong>T</strong>, asociando la localidad con el tipo de transporte que utiliza.</p>
+<p>Una vez que ya se plantearon las 3 DAGs propuestas, se comparan sus network scores para determinar cuál de las 3 es la que mejor refleja la estrucutra de dependencia de los datos, para esto se usan las pruebas <strong>BIC</strong> (Bayesian Information Criterion) y <strong>AIC</strong> (Akaike Information Criterion).</p>
+<p>El puntaje de la prueba BIC en la primera DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7863114</code></pre>
+</div>
+</div>
+<p>El puntaje de la prueba AIC en la primera DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7857363</code></pre>
+</div>
+</div>
+<p>El puntaje de la prueba BIC en la segunda DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -8032815</code></pre>
+</div>
+</div>
+<p>El puntaje de la prueba AIC en la segunda DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7944145</code></pre>
+</div>
+</div>
+<p>El puntaje de la prueba BIC en la tercera DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7983492</code></pre>
+</div>
+</div>
+<p>El puntaje de la prueba AIC en la tercera DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7918357</code></pre>
+</div>
+</div>
+<p>Dado que la primera DAG es la que tiene un mayor puntaje (dentro de la librería bnlearn aquella con mejor ajuste es la que tiene mayor puntaje) en ambas pruebas, entonces es la red que se ajusta mejor a los datos.</p>
+<p>De igual forma, se emplea el algoritmo <strong>hill-climbing</strong> para obtener la mejor estructura de la DAG en función de la base de datos.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "[S][D|S][T|S:D][O|S:T][V|T][L|T:O][H|S:T:O][EST|O:L:V][ESC|S:EST:V][A|S:EST:D:ESC]"</code></pre>
+</div>
+</div>
+<p>La cual se ve de la siguiente manera, con los arcos creando las relaciones de dependencia de sus determinados nodos.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Articulo_05_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["from"],"name":[1],"type":["chr"],"align":["left"]},{"label":["to"],"name":[2],"type":["chr"],"align":["left"]},{"label":["strength"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"ESC","2":"A","3":"0.000000e+00","_rn_":"1"},{"1":"T","2":"V","3":"0.000000e+00","_rn_":"2"},{"1":"T","2":"H","3":"0.000000e+00","_rn_":"3"},{"1":"O","2":"L","3":"0.000000e+00","_rn_":"4"},{"1":"EST","2":"ESC","3":"0.000000e+00","_rn_":"5"},{"1":"L","2":"EST","3":"0.000000e+00","_rn_":"6"},{"1":"V","2":"EST","3":"0.000000e+00","_rn_":"7"},{"1":"V","2":"ESC","3":"0.000000e+00","_rn_":"8"},{"1":"O","2":"EST","3":"0.000000e+00","_rn_":"9"},{"1":"EST","2":"A","3":"0.000000e+00","_rn_":"10"},{"1":"T","2":"O","3":"0.000000e+00","_rn_":"11"},{"1":"S","2":"T","3":"0.000000e+00","_rn_":"12"},{"1":"T","2":"L","3":"0.000000e+00","_rn_":"13"},{"1":"D","2":"T","3":"0.000000e+00","_rn_":"14"},{"1":"S","2":"ESC","3":"0.000000e+00","_rn_":"15"},{"1":"S","2":"A","3":"0.000000e+00","_rn_":"16"},{"1":"O","2":"H","3":"0.000000e+00","_rn_":"17"},{"1":"D","2":"A","3":"0.000000e+00","_rn_":"18"},{"1":"S","2":"O","3":"1.405692e-262","_rn_":"19"},{"1":"S","2":"H","3":"1.017032e-295","_rn_":"20"},{"1":"S","2":"D","3":"2.112147e-52","_rn_":"21"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>En esta nueva DAG generada por el algoritmo hill-climbing la fuerza entre los nodos varía, siendo en la mayoría de 0; sin embargo, hay algunas otras relaciones más fuertes como el sexo con si se transportan entre semana o no, o el tiempo que tardan, aunque otras lógicamente no hacen sentido, tal como el sexo con la entidad de origen.</p>
+<p>El puntaje en la prueba BIC de la nueva DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7781807</code></pre>
+</div>
+</div>
+<p>El puntaje en la prueba AIC de la nueva DAG es:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -7769003</code></pre>
+</div>
+</div>
+<p>Se observa que la nueva DAG determinada por hill-climbing tiene un mejor ajuste de su red en la relación de los datos y sus respectivas variables, ya que tiene un puntaje mayor. Por tal motivo, se llevarán a cabo las queries con base en <strong>best_dag</strong>.</p>
+</section>
+<section id="aplicación" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="aplicación"><span class="header-section-number">3</span> Aplicación</h2>
+<p>Trabajamos con la EOD-2017 (ZMVM; ~890 000 registros). Las variables consideradas fueron: S (Sexo), A (Edad categorizada), EST (Estrato), T (Transporte), D (Día de viaje), O (Entidad de origen), L (Tamaño de localidad), V (Autos disponibles), ESC (Escolaridad) y H (Duración del viaje). Tras la limpieza de códigos, recodificamos a factores con etiquetas y discretizamos cuando fue necesario (p.&nbsp;ej., H en <em>Menos1h</em> vs <em>1homas</em>).</p>
+<p>Modelamos con redes bayesianas discretas. Primero propusimos un DAG sustentado en hipótesis sustantivas; al mismo tiempo, aprendimos una estructura desde los datos mediante hill climbing. Para ambas estructuras ajustamos las tablas de probabilidad condicional (CPTs) con suavizado bayesiano.</p>
+<p>La selección del modelo se basó en AIC y BIC, buscando el mejor equilibrio entre ajuste y complejidad. Además, evaluamos dependencias locales con <code>arc.strength</code> (información mutua) y pruebas de independencia para identificar arcos débiles o prescindibles.</p>
+<p>Sobre el modelo seleccionado realizamos las consultas probabilísticas con <code>cpquery</code> mediante likelihood weighting, reportando los valores puntuales y señalando las limitaciones muestrales cuando aplicaba.</p>
+<section id="q1" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="q1"><span class="header-section-number">3.1</span> Uso de auto/moto por sexo y edad (entre semana)</h3>
+<p>Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.</p>
+<p>El evento de interés en está consulta es si la persona de transporta en automóvil o moto (<strong>T == “Moto”</strong> o <strong>T == “Auto”</strong>); dado que sea hombre (<strong>S==“Hombre”</strong>), se transporte entre semana (<strong>D==“Semana”</strong>), se encuentre en un estrato sociodemográfico medio bajo (<strong>EST==“MedioBajo”</strong>) y sea de edad media o alta (<strong>A==“MedianaEdad” o A==“AdultoMayor”</strong>). La probabilidad de que suceda es: <span class="math display">\[
+P(T \in \{\text{Auto},\text{Moto}\} \mid
+S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\
+A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
+=
+\frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
+{\#\{S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+\]</span></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1089333</code></pre>
+</div>
+</div>
+<p>Para analizar este mismo evento, pero ahora con mujeres, únicamente (<strong>S==“Mujer”</strong>) y ahora la probabilidad es: <span class="math display">\[
+P(T \in \{\text{Auto},\text{Moto}\} \mid
+S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\
+A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
+=
+\frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
+{\#\{S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+\]</span></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.06952873</code></pre>
+</div>
+</div>
+<p>En conclusión, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.</p>
+</section>
+<section id="q2" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="q2"><span class="header-section-number">3.2</span> Probabilidad de residir en Aguascalientes dado taxi</h3>
+<p>¿Cuál es la probabilidad de que una persona de estrato MedioBajo viva en Aguascalientes dado que se mueve en taxi?</p>
+<p>En esta consulta, el evento de interés <em>O</em> = <em>Aguascalientes</em> está fuera del soporte muestral de la base utilizada. La EOD-2017 analizada corresponde a la Zona Metropolitana del Valle de México (ZMVM); en este marco, la variable O (Entidad de origen) solo toma los valores CDMX, Hidalgo y Edomex. Es decir que el dominio observado de (O) es <span class="math display">\[ \Omega_O = \{\text{CDMX},\text{Hidalgo},\text{Edomex}\}
+\]</span>por lo que <em>Aguascalientes</em> no pertenece al dominio. Esta restricción se confirma con un conteo simple: la frecuencia de registros con <em>O</em> = <em>Aguascalientes</em> es 0.</p>
+<p>Bajo esta situación, la probabilidad condicional solicitada se evalúa como: <span class="math display">\[
+P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr)
+=\frac{\#\{O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}
+{\#\{EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}.
+\]</span>Dado que el numerador es 0 (no existen casos con <em>O</em> = <em>Aguascalientes</em> en la muestra) y el denominador es positivo (sí hay observaciones con <em>EST</em> = <em>MedioBajo</em> y <em>T</em> = <em>Taxi</em>), se obtiene:</p>
+<p><span class="math display">\[
+P(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\, T=\mathrm{Taxi})=0
+\]</span></p>
+<p>Es importante mencionar que se trata de una imposibilidad muestral por ausencia de casos en la muestra, no necesariamente de una imposibilidad poblacional.</p>
+</section>
+<section id="q3" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="q3"><span class="header-section-number">3.3</span> Duración &gt;1 h por tamaño de localidad y modo</h3>
+<p>Nos interesa saber si es más probable que las personas de localidades &lt; 2,500 habitantes realicen viajes de más de 1 hora en automóvil, colectivo/micro, metro, autobús, trolebús, tren ligero, tren suburbano o transporte de personal, en comparación con las personas de localidades &gt; 100,000 habitantes que cumplan con las mismas características.</p>
+</section>
+<section id="q4" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="q4"><span class="header-section-number">3.4</span> Autos/camionetas y escolaridad</h3>
+<p>¿Cuál es la probabilidad de que una persona tenga al menos un auto o camioneta dado que su nivel de escolaridad es primaria o preescolar?</p>
+</section>
+</section>
+<section id="conclusiones" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="conclusiones"><span class="header-section-number">4</span> Conclusiones</h2>
+</section>
+<section id="referencias" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="referencias"><span class="header-section-number">5</span> Referencias</h2>
+
+<!-- -->
+
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copiado");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copiado");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Ejecutar el código</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb16" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Redes Bayesianas para el transporte"</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">  - name: "Jessica Dong"</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">  - name: "Ebony Valadez"</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co">  - name: "Emiliano Guzmán"</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co">  - name: "Rafael Gutiérrez "</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> today</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="an">lang:</span><span class="co"> es</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> |</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">  Este estudio utiliza la Encuesta Origen-Destino del INEGI realizada en 2017 para analizar los patrones de movilidad de los ciudadanos en la Ciudad de México. Mediante el uso de la teoría de redes bayesianas, se construye un modelo probabilístico a partir de los datos de la encuesta para analizar las relaciones entre las variables sociodemográficas y de transporte. Se proponen y evalúan diferentes estructuras de Redes Acíclicas Dirigidas (DAGs) para representar estas dependencias. Los resultados del análisis permiten responder a preguntas clave sobre la movilidad. Se busca resaltar la importancia de los modelos probabilísticos para comprender la complejidad de los modelos de transporte en las ciudades mexicanas, con el objetivo de brindar información útil para la planeación de políticas públicas relacionadas con el transporte.</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["redes bayesianas", "bnlearn", "movilidad", "discretización"]</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: false       </span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co">#bibliography: refs.bib</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="an">csl:</span><span class="co"> https://www.zotero.org/styles/apa</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="an">link-citations:</span><span class="co"> true</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="an">crossref:</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="co">  fig-prefix: "Figura"</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="co">  tbl-prefix: "Tabla"</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="co">  eq-prefix: "Ecuación"</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="co">    theme: cosmo</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: show</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="co">    df-print: paged</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co">    math: mathjax</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co">  pdf:</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co">    documentclass: article</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 3</span></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="co">    number-sections: true</span></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="co">    geometry: "margin=1in"</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="co">    fig-cap-location: bottom</span></span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="co">    tbl-cap-location: top</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introducción</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>La movilidad urbana es un aspecto fundamental para el desarrollo socioeconómico de las ciudades modernas, ya que esta influye de manera significativa en la calidad de vida de sus habitantes, el medio ambiente y la economía de cada una. En la Zona Metropolitana del Valle de México, esto presenta una gran complejidad debido a su tamaño, densidad de población y red de transporte. Comprender los patrones de viaje y los factores que influyen en la toma de decisiones de los ciudadanos es crucial para el diseño de políticas públicas más efectivas y sostenibles.</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>La Encuesta Origen-Destino en Hogares (EOD) 2017, realizada por el Instituto Nacional de Estadística y Geografía (INEGI) en colaboración con el Instituto de Ingeniería de la UNAM, fue la fuente de datos más importante para este proyecto. A partir de esta encuesta, se obtuvo información que muestra los patrones de movilidad cotidiana de los habitantes de la Ciudad de México y las características de los viajes que estos realizan. Mediante estos datos, es posible analizar las relaciones entre variables sociodemográficas (como género, edad e ingresos) y las decisiones de transporte (como el medio utilizado, la duración y el motivo del viaje) <span class="sc">\[</span>1<span class="sc">\]</span>.</span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>Este artículo explora estas relaciones de dependencia utilizando la teoría de las **redes bayesianas**. Este enfoque permite modelar la estructura de dependencia probabilística entre múltiples variables, lo que es bastante útil para analizar fenómenos complejos como la movilidad urbana. El objetivo de este estudio es es construir y comparar diferentes modelos de Redes Acíclicas Dirigidas (DAGs) que representen las relaciones entre las variables de la encuesta mencionada; para posteriormente, responder preguntas de investigación específicas acerca de la movilidad en la ZMVM.</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Metodología</span></span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"bnlearn"</span>)</span>
+<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bnlearn)</span>
+<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-71"><a href="#cb16-71" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb16-72"><a href="#cb16-72" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-75"><a href="#cb16-75" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-76"><a href="#cb16-76" aria-hidden="true" tabindex="-1"></a>datos<span class="ot">=</span><span class="fu">read.csv</span>(<span class="st">"~/SP-Transporte-en-Mexico/data_corregido.csv"</span>)</span>
+<span id="cb16-77"><a href="#cb16-77" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos)</span>
+<span id="cb16-78"><a href="#cb16-78" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-79"><a href="#cb16-79" aria-hidden="true" tabindex="-1"></a>Una vez llamada la base de datos, se crea un diccionario y se cambian los valores de las variables a datos de tipo factor, así como al significado correspondiente en texto para un manejo de los datos más sencillo.</span>
+<span id="cb16-82"><a href="#cb16-82" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-83"><a href="#cb16-83" aria-hidden="true" tabindex="-1"></a><span class="co">#Sexo</span></span>
+<span id="cb16-84"><a href="#cb16-84" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>S <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>S,</span>
+<span id="cb16-85"><a href="#cb16-85" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb16-86"><a href="#cb16-86" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Hombre"</span>, <span class="st">"Mujer"</span>))</span>
+<span id="cb16-87"><a href="#cb16-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-88"><a href="#cb16-88" aria-hidden="true" tabindex="-1"></a><span class="co">#Transporte</span></span>
+<span id="cb16-89"><a href="#cb16-89" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>T <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>T,</span>
+<span id="cb16-90"><a href="#cb16-90" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>,</span>
+<span id="cb16-91"><a href="#cb16-91" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Auto"</span>, <span class="st">"Colectivo"</span>, <span class="st">"TaxiApp"</span>, <span class="st">"TaxiCalle"</span>,</span>
+<span id="cb16-92"><a href="#cb16-92" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"Metro"</span>, <span class="st">"RTP_M1"</span>, <span class="st">"Bici"</span>, <span class="st">"Autobus"</span>,</span>
+<span id="cb16-93"><a href="#cb16-93" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"Moto"</span>, <span class="st">"Trolebus"</span>, <span class="st">"Metrobús"</span>,</span>
+<span id="cb16-94"><a href="#cb16-94" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"TrenLigero"</span>, <span class="st">"Suburbano"</span>, <span class="st">"Caminar"</span>,</span>
+<span id="cb16-95"><a href="#cb16-95" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"Mexicable"</span>, <span class="st">"Bicitaxi"</span>, <span class="st">"Mototaxi"</span>,</span>
+<span id="cb16-96"><a href="#cb16-96" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"Escolar"</span>, <span class="st">"Personal"</span>, <span class="st">"Otro"</span>))</span>
+<span id="cb16-97"><a href="#cb16-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-98"><a href="#cb16-98" aria-hidden="true" tabindex="-1"></a><span class="co">#Estrato</span></span>
+<span id="cb16-99"><a href="#cb16-99" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>EST <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>EST,</span>
+<span id="cb16-100"><a href="#cb16-100" aria-hidden="true" tabindex="-1"></a>                    <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb16-101"><a href="#cb16-101" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Bajo"</span>, <span class="st">"MedioBajo"</span>, <span class="st">"MedioAlto"</span>, <span class="st">"Alto"</span>))</span>
+<span id="cb16-102"><a href="#cb16-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-103"><a href="#cb16-103" aria-hidden="true" tabindex="-1"></a><span class="co">#Día de viaje</span></span>
+<span id="cb16-104"><a href="#cb16-104" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>D <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>D,</span>
+<span id="cb16-105"><a href="#cb16-105" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb16-106"><a href="#cb16-106" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Semana"</span>, <span class="st">"FinSemana"</span>))</span>
+<span id="cb16-107"><a href="#cb16-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-108"><a href="#cb16-108" aria-hidden="true" tabindex="-1"></a><span class="co">#Entidad</span></span>
+<span id="cb16-109"><a href="#cb16-109" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>O <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>O,</span>
+<span id="cb16-110"><a href="#cb16-110" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">9</span>, <span class="dv">13</span>, <span class="dv">15</span>),</span>
+<span id="cb16-111"><a href="#cb16-111" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"CDMX"</span>, <span class="st">"Hidalgo"</span>, <span class="st">"Edomex"</span>))</span>
+<span id="cb16-112"><a href="#cb16-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-113"><a href="#cb16-113" aria-hidden="true" tabindex="-1"></a><span class="co">#Localidad</span></span>
+<span id="cb16-114"><a href="#cb16-114" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>L <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>L,</span>
+<span id="cb16-115"><a href="#cb16-115" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb16-116"><a href="#cb16-116" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Loc_100k+"</span>, <span class="st">"Loc_15k_99k"</span>, <span class="st">"Loc_2.5k_14k"</span>, <span class="st">"Loc_menor2.5k"</span>))</span>
+<span id="cb16-117"><a href="#cb16-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-118"><a href="#cb16-118" aria-hidden="true" tabindex="-1"></a><span class="co">#Cantidad de vehículos con los que cuentan</span></span>
+<span id="cb16-119"><a href="#cb16-119" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>V <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>V,</span>
+<span id="cb16-120"><a href="#cb16-120" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">8</span>,</span>
+<span id="cb16-121"><a href="#cb16-121" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">paste0</span>(<span class="st">"Autos_"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">8</span>))</span>
+<span id="cb16-122"><a href="#cb16-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-123"><a href="#cb16-123" aria-hidden="true" tabindex="-1"></a><span class="co">#Escolaridad</span></span>
+<span id="cb16-124"><a href="#cb16-124" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>ESC <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>ESC,</span>
+<span id="cb16-125"><a href="#cb16-125" aria-hidden="true" tabindex="-1"></a>                    <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">9</span>, <span class="dv">99</span>),</span>
+<span id="cb16-126"><a href="#cb16-126" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Ninguno"</span>, <span class="st">"Preescolar"</span>, <span class="st">"Primaria"</span>, <span class="st">"Secundaria"</span>,</span>
+<span id="cb16-127"><a href="#cb16-127" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"CarrTecSec"</span>, <span class="st">"NormalBas"</span>, <span class="st">"Prepa"</span>, <span class="st">"CarrTecPrepa"</span>,</span>
+<span id="cb16-128"><a href="#cb16-128" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Licenciatura"</span>, <span class="st">"Posgrado"</span>, <span class="st">"NoSabe"</span>))</span>
+<span id="cb16-129"><a href="#cb16-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-130"><a href="#cb16-130" aria-hidden="true" tabindex="-1"></a><span class="co">#Edad categorizada</span></span>
+<span id="cb16-131"><a href="#cb16-131" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>A <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>A,</span>
+<span id="cb16-132"><a href="#cb16-132" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb16-133"><a href="#cb16-133" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Joven"</span>, <span class="st">"Adulto"</span>, <span class="st">"MedianaEdad"</span>, <span class="st">"AdultoMayor"</span>))</span>
+<span id="cb16-134"><a href="#cb16-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-135"><a href="#cb16-135" aria-hidden="true" tabindex="-1"></a><span class="co">#Tiempo de viaje (0 = menos de 1h, cualquier otro valor = 1h o más)</span></span>
+<span id="cb16-136"><a href="#cb16-136" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>H <span class="ot">=</span> <span class="fu">ifelse</span>(datos<span class="sc">$</span>H <span class="sc">==</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb16-137"><a href="#cb16-137" aria-hidden="true" tabindex="-1"></a>datos<span class="sc">$</span>H <span class="ot">=</span> <span class="fu">factor</span>(datos<span class="sc">$</span>H,</span>
+<span id="cb16-138"><a href="#cb16-138" aria-hidden="true" tabindex="-1"></a>                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb16-139"><a href="#cb16-139" aria-hidden="true" tabindex="-1"></a>                  <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Menos1h"</span>, <span class="st">"1homas"</span>))</span>
+<span id="cb16-140"><a href="#cb16-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-141"><a href="#cb16-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-142"><a href="#cb16-142" aria-hidden="true" tabindex="-1"></a><span class="co">#Confirmar que en todas las variables sus valores sean factores</span></span>
+<span id="cb16-143"><a href="#cb16-143" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(datos, class)</span>
+<span id="cb16-144"><a href="#cb16-144" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-147"><a href="#cb16-147" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-148"><a href="#cb16-148" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos)</span>
+<span id="cb16-149"><a href="#cb16-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-150"><a href="#cb16-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-151"><a href="#cb16-151" aria-hidden="true" tabindex="-1"></a>Posteriormente, se propusieron 3 DAGs diferentes con base en las relaciones entre las variables que se consideraron de mayor impacto, denotando nodos con sus respectivos arcos, así como las relaciones de dependencia. Asimismo, para el manejo de la DAG se asignó una clave corta a cada variable:</span>
+<span id="cb16-152"><a href="#cb16-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-153"><a href="#cb16-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A** = edad_cat  </span>
+<span id="cb16-154"><a href="#cb16-154" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**D** = dia_viaje  </span>
+<span id="cb16-155"><a href="#cb16-155" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**EST** = estrato  </span>
+<span id="cb16-156"><a href="#cb16-156" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**V** = autos_camionetas  </span>
+<span id="cb16-157"><a href="#cb16-157" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**L** = localidad  </span>
+<span id="cb16-158"><a href="#cb16-158" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**H** = tiempo_cat  </span>
+<span id="cb16-159"><a href="#cb16-159" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**O** = Entidad  </span>
+<span id="cb16-160"><a href="#cb16-160" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**ESC** = escolaridad  </span>
+<span id="cb16-161"><a href="#cb16-161" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**S** = sexo  </span>
+<span id="cb16-162"><a href="#cb16-162" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**T** = transporte  </span>
+<span id="cb16-163"><a href="#cb16-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-164"><a href="#cb16-164" aria-hidden="true" tabindex="-1"></a>La DAG 1 se formula con base en que la edad determina la educación y ésta se relaciona con el estrato sociodemográfico de la perosna y el tipo de transporte que utiliza, así como arcos en función de cuestiones geográficas y el tiempo de traslado, así como quizá el sexo interfiera con el medio de transporte.</span>
+<span id="cb16-167"><a href="#cb16-167" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-168"><a href="#cb16-168" aria-hidden="true" tabindex="-1"></a>dag1 <span class="ot">=</span> <span class="fu">empty.graph</span>(<span class="at">nodes =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"D"</span>, <span class="st">"EST"</span>, <span class="st">"V"</span>, <span class="st">"L"</span>, <span class="st">"H"</span>, <span class="st">"O"</span>, <span class="st">"ESC"</span>,<span class="st">"S"</span>,<span class="st">"T"</span>))</span>
+<span id="cb16-169"><a href="#cb16-169" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-172"><a href="#cb16-172" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-173"><a href="#cb16-173" aria-hidden="true" tabindex="-1"></a>arc_set1 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">"A"</span>,<span class="st">"ESC"</span>,</span>
+<span id="cb16-174"><a href="#cb16-174" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"ESC"</span>,<span class="st">"EST"</span>,</span>
+<span id="cb16-175"><a href="#cb16-175" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"EST"</span>,<span class="st">"V"</span>,</span>
+<span id="cb16-176"><a href="#cb16-176" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"V"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-177"><a href="#cb16-177" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"T"</span>,<span class="st">"H"</span>,</span>
+<span id="cb16-178"><a href="#cb16-178" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"S"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-179"><a href="#cb16-179" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"D"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-180"><a href="#cb16-180" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"O"</span>,<span class="st">"L"</span>,</span>
+<span id="cb16-181"><a href="#cb16-181" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"L"</span>,<span class="st">"EST"</span>,</span>
+<span id="cb16-182"><a href="#cb16-182" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"L"</span>,<span class="st">"H"</span>), </span>
+<span id="cb16-183"><a href="#cb16-183" aria-hidden="true" tabindex="-1"></a>                 <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb16-184"><a href="#cb16-184" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">c</span>(<span class="st">"from"</span>,<span class="st">"to"</span>)))</span>
+<span id="cb16-185"><a href="#cb16-185" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-188"><a href="#cb16-188" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-189"><a href="#cb16-189" aria-hidden="true" tabindex="-1"></a><span class="fu">arcs</span>(dag1) <span class="ot">=</span> arc_set1</span>
+<span id="cb16-190"><a href="#cb16-190" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-193"><a href="#cb16-193" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-194"><a href="#cb16-194" aria-hidden="true" tabindex="-1"></a>dag1</span>
+<span id="cb16-195"><a href="#cb16-195" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-198"><a href="#cb16-198" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-199"><a href="#cb16-199" aria-hidden="true" tabindex="-1"></a><span class="fu">graphviz.plot</span>(dag1, <span class="at">shape =</span> <span class="st">"rectangle"</span>)</span>
+<span id="cb16-200"><a href="#cb16-200" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-201"><a href="#cb16-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-204"><a href="#cb16-204" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-205"><a href="#cb16-205" aria-hidden="true" tabindex="-1"></a>bn_mle<span class="ot">=</span><span class="fu">bn.fit</span>(dag1,<span class="at">data=</span>datos, <span class="at">method=</span><span class="st">'mle'</span>)</span>
+<span id="cb16-206"><a href="#cb16-206" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(dag1, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">"mi"</span>)</span>
+<span id="cb16-207"><a href="#cb16-207" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-208"><a href="#cb16-208" aria-hidden="true" tabindex="-1"></a>Se observa cómo las relaciones de dependencia son bastante débiles, siendo la mayor la relación entre la localidad de la persona con respecto a las horas que tarda en el transporte; sin embargo, aún sigue siendo muy baja.</span>
+<span id="cb16-209"><a href="#cb16-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-210"><a href="#cb16-210" aria-hidden="true" tabindex="-1"></a>La segunda DAG propuesta se centra principalmente en el entorno geográfico, es decir, que del lugar de origen o la localidad se relacionan el estrato, el tiempo del viaje, la cantidad de vehículos, así como otras relaciones entre el sexo y la edad para determinar la escolaridad y el medio de transporte.</span>
+<span id="cb16-213"><a href="#cb16-213" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-214"><a href="#cb16-214" aria-hidden="true" tabindex="-1"></a>dag2 <span class="ot">=</span> <span class="fu">empty.graph</span>(<span class="at">nodes =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"D"</span>, <span class="st">"EST"</span>, <span class="st">"V"</span>, <span class="st">"L"</span>, <span class="st">"H"</span>, <span class="st">"O"</span>, <span class="st">"ESC"</span>,<span class="st">"S"</span>,<span class="st">"T"</span>))</span>
+<span id="cb16-215"><a href="#cb16-215" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-216"><a href="#cb16-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-219"><a href="#cb16-219" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-220"><a href="#cb16-220" aria-hidden="true" tabindex="-1"></a>arc_set2 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">"O"</span>,<span class="st">"L"</span>,</span>
+<span id="cb16-221"><a href="#cb16-221" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"L"</span>,<span class="st">"EST"</span>,</span>
+<span id="cb16-222"><a href="#cb16-222" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"EST"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-223"><a href="#cb16-223" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"O"</span>,<span class="st">"H"</span>,</span>
+<span id="cb16-224"><a href="#cb16-224" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"L"</span>,<span class="st">"H"</span>,</span>
+<span id="cb16-225"><a href="#cb16-225" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"EST"</span>,<span class="st">"V"</span>,</span>
+<span id="cb16-226"><a href="#cb16-226" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"V"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-227"><a href="#cb16-227" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"S"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-228"><a href="#cb16-228" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"A"</span>,<span class="st">"ESC"</span>,</span>
+<span id="cb16-229"><a href="#cb16-229" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"ESC"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-230"><a href="#cb16-230" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"D"</span>,<span class="st">"H"</span>), </span>
+<span id="cb16-231"><a href="#cb16-231" aria-hidden="true" tabindex="-1"></a>                 <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb16-232"><a href="#cb16-232" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">c</span>(<span class="st">"from"</span>,<span class="st">"to"</span>)))</span>
+<span id="cb16-233"><a href="#cb16-233" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-236"><a href="#cb16-236" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-237"><a href="#cb16-237" aria-hidden="true" tabindex="-1"></a><span class="fu">arcs</span>(dag2) <span class="ot">=</span> arc_set2</span>
+<span id="cb16-238"><a href="#cb16-238" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-241"><a href="#cb16-241" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-242"><a href="#cb16-242" aria-hidden="true" tabindex="-1"></a>dag2</span>
+<span id="cb16-243"><a href="#cb16-243" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-246"><a href="#cb16-246" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-247"><a href="#cb16-247" aria-hidden="true" tabindex="-1"></a><span class="fu">graphviz.plot</span>(dag2, <span class="at">shape =</span> <span class="st">"rectangle"</span>)</span>
+<span id="cb16-248"><a href="#cb16-248" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-251"><a href="#cb16-251" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-252"><a href="#cb16-252" aria-hidden="true" tabindex="-1"></a>bn_mle<span class="ot">=</span><span class="fu">bn.fit</span>(dag2,<span class="at">data=</span>datos, <span class="at">method=</span><span class="st">'mle'</span>)</span>
+<span id="cb16-253"><a href="#cb16-253" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(dag2, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">"mi"</span>)</span>
+<span id="cb16-254"><a href="#cb16-254" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-255"><a href="#cb16-255" aria-hidden="true" tabindex="-1"></a>Nuevamente, al analizar las relaciones de dependencia entre las variables, se observa que la dependecia más fuerte va desde el nodo **L** al nodo **H**.</span>
+<span id="cb16-256"><a href="#cb16-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-257"><a href="#cb16-257" aria-hidden="true" tabindex="-1"></a>Por último, la tercera DAG se basa principalmente en factores personales como los determinantes de mayor impacto. Teniendo como nodos padres e independientes la edad y el sexo, y que a partir de éstos se condicionen otros aspectos relacionados con la movilidad de las personas, su escolaridad y el estrato en el que se encuentran.</span>
+<span id="cb16-258"><a href="#cb16-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-261"><a href="#cb16-261" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-262"><a href="#cb16-262" aria-hidden="true" tabindex="-1"></a>dag3 <span class="ot">=</span> <span class="fu">empty.graph</span>(<span class="at">nodes =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"D"</span>, <span class="st">"EST"</span>, <span class="st">"V"</span>, <span class="st">"L"</span>, <span class="st">"H"</span>, <span class="st">"O"</span>, <span class="st">"ESC"</span>,<span class="st">"S"</span>,<span class="st">"T"</span>))</span>
+<span id="cb16-263"><a href="#cb16-263" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-266"><a href="#cb16-266" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-267"><a href="#cb16-267" aria-hidden="true" tabindex="-1"></a>arc_set3 <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="st">"A"</span>,<span class="st">"ESC"</span>,</span>
+<span id="cb16-268"><a href="#cb16-268" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"ESC"</span>,<span class="st">"EST"</span>,</span>
+<span id="cb16-269"><a href="#cb16-269" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"EST"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-270"><a href="#cb16-270" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"T"</span>,<span class="st">"H"</span>,</span>
+<span id="cb16-271"><a href="#cb16-271" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"S"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-272"><a href="#cb16-272" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"A"</span>,<span class="st">"V"</span>,</span>
+<span id="cb16-273"><a href="#cb16-273" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"V"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-274"><a href="#cb16-274" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"O"</span>,<span class="st">"L"</span>,</span>
+<span id="cb16-275"><a href="#cb16-275" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"L"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-276"><a href="#cb16-276" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"D"</span>,<span class="st">"T"</span>,</span>
+<span id="cb16-277"><a href="#cb16-277" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"L"</span>,<span class="st">"H"</span>), </span>
+<span id="cb16-278"><a href="#cb16-278" aria-hidden="true" tabindex="-1"></a>                 <span class="at">byrow =</span> <span class="cn">TRUE</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb16-279"><a href="#cb16-279" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">c</span>(<span class="st">"from"</span>,<span class="st">"to"</span>)))</span>
+<span id="cb16-280"><a href="#cb16-280" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-283"><a href="#cb16-283" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-284"><a href="#cb16-284" aria-hidden="true" tabindex="-1"></a><span class="fu">arcs</span>(dag3) <span class="ot">=</span> arc_set3</span>
+<span id="cb16-285"><a href="#cb16-285" aria-hidden="true" tabindex="-1"></a>dag3</span>
+<span id="cb16-286"><a href="#cb16-286" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-287"><a href="#cb16-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-290"><a href="#cb16-290" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-291"><a href="#cb16-291" aria-hidden="true" tabindex="-1"></a><span class="fu">graphviz.plot</span>(dag3, <span class="at">shape =</span> <span class="st">"rectangle"</span>)</span>
+<span id="cb16-292"><a href="#cb16-292" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-295"><a href="#cb16-295" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-296"><a href="#cb16-296" aria-hidden="true" tabindex="-1"></a>bn_mle<span class="ot">=</span><span class="fu">bn.fit</span>(dag3,<span class="at">data=</span>datos, <span class="at">method=</span><span class="st">'mle'</span>)</span>
+<span id="cb16-297"><a href="#cb16-297" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(dag3, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">"mi"</span>)</span>
+<span id="cb16-298"><a href="#cb16-298" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-299"><a href="#cb16-299" aria-hidden="true" tabindex="-1"></a>En la tercera DAG destacan las relaciones de dependencia de **A** a **V**, relacionando la edad de la persona con la cantidad de vehículos en su hogar, así como de **L** a **T**, asociando la localidad con el tipo de transporte que utiliza.</span>
+<span id="cb16-300"><a href="#cb16-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-301"><a href="#cb16-301" aria-hidden="true" tabindex="-1"></a>Una vez que ya se plantearon las 3 DAGs propuestas, se comparan sus network scores para determinar cuál de las 3 es la que mejor refleja la estrucutra de dependencia de los datos, para esto se usan las pruebas **BIC** (Bayesian Information Criterion) y **AIC** (Akaike Information Criterion).</span>
+<span id="cb16-302"><a href="#cb16-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-303"><a href="#cb16-303" aria-hidden="true" tabindex="-1"></a>El puntaje de la prueba BIC en la primera DAG es:</span>
+<span id="cb16-306"><a href="#cb16-306" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-307"><a href="#cb16-307" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag1, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"bic"</span>)</span>
+<span id="cb16-308"><a href="#cb16-308" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-309"><a href="#cb16-309" aria-hidden="true" tabindex="-1"></a>El puntaje de la prueba AIC en la primera DAG es:</span>
+<span id="cb16-312"><a href="#cb16-312" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-313"><a href="#cb16-313" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag1, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"aic"</span>)</span>
+<span id="cb16-314"><a href="#cb16-314" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-315"><a href="#cb16-315" aria-hidden="true" tabindex="-1"></a>El puntaje de la prueba BIC en la segunda DAG es:</span>
+<span id="cb16-318"><a href="#cb16-318" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-319"><a href="#cb16-319" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag2, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"bic"</span>)</span>
+<span id="cb16-320"><a href="#cb16-320" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-321"><a href="#cb16-321" aria-hidden="true" tabindex="-1"></a>El puntaje de la prueba AIC en la segunda DAG es:</span>
+<span id="cb16-324"><a href="#cb16-324" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-325"><a href="#cb16-325" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag2, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"aic"</span>)</span>
+<span id="cb16-326"><a href="#cb16-326" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-327"><a href="#cb16-327" aria-hidden="true" tabindex="-1"></a>El puntaje de la prueba BIC en la tercera DAG es:</span>
+<span id="cb16-330"><a href="#cb16-330" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-331"><a href="#cb16-331" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag3, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"bic"</span>)</span>
+<span id="cb16-332"><a href="#cb16-332" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-333"><a href="#cb16-333" aria-hidden="true" tabindex="-1"></a>El puntaje de la prueba AIC en la tercera DAG es:</span>
+<span id="cb16-336"><a href="#cb16-336" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-337"><a href="#cb16-337" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(dag3, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"aic"</span>)</span>
+<span id="cb16-338"><a href="#cb16-338" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-339"><a href="#cb16-339" aria-hidden="true" tabindex="-1"></a>Dado que la primera DAG es la que tiene un mayor puntaje (dentro de la librería bnlearn aquella con mejor ajuste es la que tiene mayor puntaje) en ambas pruebas, entonces es la red que se ajusta mejor a los datos.</span>
+<span id="cb16-340"><a href="#cb16-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-341"><a href="#cb16-341" aria-hidden="true" tabindex="-1"></a>De igual forma, se emplea el algoritmo **hill-climbing** para obtener la mejor estructura de la DAG en función de la base de datos.</span>
+<span id="cb16-344"><a href="#cb16-344" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-345"><a href="#cb16-345" aria-hidden="true" tabindex="-1"></a>best_dag <span class="ot">=</span> <span class="fu">hc</span>(datos)</span>
+<span id="cb16-346"><a href="#cb16-346" aria-hidden="true" tabindex="-1"></a><span class="fu">modelstring</span>(best_dag)</span>
+<span id="cb16-347"><a href="#cb16-347" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-350"><a href="#cb16-350" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-351"><a href="#cb16-351" aria-hidden="true" tabindex="-1"></a>bn<span class="ot">=</span><span class="fu">bn.fit</span>(best_dag,<span class="at">data=</span>datos)</span>
+<span id="cb16-352"><a href="#cb16-352" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-353"><a href="#cb16-353" aria-hidden="true" tabindex="-1"></a>La cual se ve de la siguiente manera, con los arcos creando las relaciones de dependencia de sus determinados nodos.</span>
+<span id="cb16-356"><a href="#cb16-356" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-357"><a href="#cb16-357" aria-hidden="true" tabindex="-1"></a><span class="fu">graphviz.plot</span>(best_dag, <span class="at">shape =</span> <span class="st">"rectangle"</span>)</span>
+<span id="cb16-358"><a href="#cb16-358" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-359"><a href="#cb16-359" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-362"><a href="#cb16-362" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-363"><a href="#cb16-363" aria-hidden="true" tabindex="-1"></a><span class="fu">arc.strength</span>(best_dag, <span class="at">data =</span> datos, <span class="at">criterion =</span> <span class="st">"mi"</span>)</span>
+<span id="cb16-364"><a href="#cb16-364" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-365"><a href="#cb16-365" aria-hidden="true" tabindex="-1"></a>En esta nueva DAG generada por el algoritmo hill-climbing la fuerza entre los nodos varía, siendo en la mayoría de 0; sin embargo, hay algunas otras relaciones más fuertes como el sexo con si se transportan entre semana o no, o el tiempo que tardan, aunque otras lógicamente no hacen sentido, tal como el sexo con la entidad de origen.</span>
+<span id="cb16-366"><a href="#cb16-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-367"><a href="#cb16-367" aria-hidden="true" tabindex="-1"></a>El puntaje en la prueba BIC de la nueva DAG es:</span>
+<span id="cb16-370"><a href="#cb16-370" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-371"><a href="#cb16-371" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(best_dag, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"bic"</span>)</span>
+<span id="cb16-372"><a href="#cb16-372" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-373"><a href="#cb16-373" aria-hidden="true" tabindex="-1"></a>El puntaje en la prueba AIC de la nueva DAG es:</span>
+<span id="cb16-376"><a href="#cb16-376" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-377"><a href="#cb16-377" aria-hidden="true" tabindex="-1"></a><span class="fu">score</span>(best_dag, <span class="at">data =</span> datos, <span class="at">type =</span> <span class="st">"aic"</span>)</span>
+<span id="cb16-378"><a href="#cb16-378" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-379"><a href="#cb16-379" aria-hidden="true" tabindex="-1"></a>Se observa que la nueva DAG determinada por hill-climbing tiene un mejor ajuste de su red en la relación de los datos y sus respectivas variables, ya que tiene un puntaje mayor. Por tal motivo, se llevarán a cabo las queries con base en **best_dag**.</span>
+<span id="cb16-380"><a href="#cb16-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-381"><a href="#cb16-381" aria-hidden="true" tabindex="-1"></a><span class="fu">## Aplicación</span></span>
+<span id="cb16-382"><a href="#cb16-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-383"><a href="#cb16-383" aria-hidden="true" tabindex="-1"></a>Trabajamos con la EOD-2017 (ZMVM; \~890 000 registros). Las variables consideradas fueron: S (Sexo), A (Edad categorizada), EST (Estrato), T (Transporte), D (Día de viaje), O (Entidad de origen), L (Tamaño de localidad), V (Autos disponibles), ESC (Escolaridad) y H (Duración del viaje). Tras la limpieza de códigos, recodificamos a factores con etiquetas y discretizamos cuando fue necesario (p. ej., H en *Menos1h* vs *1homas*).</span>
+<span id="cb16-384"><a href="#cb16-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-385"><a href="#cb16-385" aria-hidden="true" tabindex="-1"></a>Modelamos con redes bayesianas discretas. Primero propusimos un DAG sustentado en hipótesis sustantivas; al mismo tiempo, aprendimos una estructura desde los datos mediante hill climbing. Para ambas estructuras ajustamos las tablas de probabilidad condicional (CPTs) con suavizado bayesiano.</span>
+<span id="cb16-386"><a href="#cb16-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-387"><a href="#cb16-387" aria-hidden="true" tabindex="-1"></a>La selección del modelo se basó en AIC y BIC, buscando el mejor equilibrio entre ajuste y complejidad. Además, evaluamos dependencias locales con <span class="in">`arc.strength`</span> (información mutua) y pruebas de independencia para identificar arcos débiles o prescindibles.</span>
+<span id="cb16-388"><a href="#cb16-388" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-389"><a href="#cb16-389" aria-hidden="true" tabindex="-1"></a>Sobre el modelo seleccionado realizamos las consultas probabilísticas con <span class="in">`cpquery`</span> mediante likelihood weighting, reportando los valores puntuales y señalando las limitaciones muestrales cuando aplicaba.</span>
+<span id="cb16-390"><a href="#cb16-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-391"><a href="#cb16-391" aria-hidden="true" tabindex="-1"></a><span class="fu">### Uso de auto/moto por sexo y edad (entre semana) {#q1}</span></span>
+<span id="cb16-392"><a href="#cb16-392" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-393"><a href="#cb16-393" aria-hidden="true" tabindex="-1"></a>Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.</span>
+<span id="cb16-394"><a href="#cb16-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-395"><a href="#cb16-395" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-396"><a href="#cb16-396" aria-hidden="true" tabindex="-1"></a>El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es:</span>
+<span id="cb16-397"><a href="#cb16-397" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb16-398"><a href="#cb16-398" aria-hidden="true" tabindex="-1"></a>P(T \in <span class="sc">\{</span>\text{Auto},\text{Moto}<span class="sc">\}</span> \mid </span>
+<span id="cb16-399"><a href="#cb16-399" aria-hidden="true" tabindex="-1"></a>S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ </span>
+<span id="cb16-400"><a href="#cb16-400" aria-hidden="true" tabindex="-1"></a>A \in <span class="sc">\{</span>\text{MedianaEdad},\text{AdultoMayor}<span class="sc">\}</span>)</span>
+<span id="cb16-401"><a href="#cb16-401" aria-hidden="true" tabindex="-1"></a>=</span>
+<span id="cb16-402"><a href="#cb16-402" aria-hidden="true" tabindex="-1"></a>\frac{<span class="sc">\#\{</span>T \in <span class="sc">\{</span>\text{Auto},\text{Moto}<span class="sc">\}</span>,\ S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in <span class="sc">\{</span>\text{MedianaEdad},\text{AdultoMayor}<span class="sc">\}\}</span>}</span>
+<span id="cb16-403"><a href="#cb16-403" aria-hidden="true" tabindex="-1"></a>{<span class="sc">\#\{</span>S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in <span class="sc">\{</span>\text{MedianaEdad},\text{AdultoMayor}<span class="sc">\}\}</span>}.</span>
+<span id="cb16-404"><a href="#cb16-404" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb16-405"><a href="#cb16-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-408"><a href="#cb16-408" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-409"><a href="#cb16-409" aria-hidden="true" tabindex="-1"></a><span class="fu">cpquery</span>(bn, <span class="at">event =</span> ((T<span class="sc">==</span><span class="st">"Moto"</span>)<span class="sc">|</span>(T<span class="sc">==</span><span class="st">"Auto"</span>)), <span class="at">evidence =</span> (((S<span class="sc">==</span><span class="st">"Hombre"</span>)<span class="sc">&amp;</span>(D<span class="sc">==</span><span class="st">"Semana"</span>)<span class="sc">&amp;</span>(A<span class="sc">==</span><span class="st">"MedianaEdad"</span>)<span class="sc">&amp;</span>(EST<span class="sc">==</span><span class="st">"MedioBajo"</span>))<span class="sc">|</span>((S<span class="sc">==</span><span class="st">"Hombre"</span>)<span class="sc">&amp;</span>(D<span class="sc">==</span><span class="st">"Semana"</span>)<span class="sc">&amp;</span>(A<span class="sc">==</span><span class="st">"AdultoMayor"</span>)<span class="sc">&amp;</span>(EST<span class="sc">==</span><span class="st">"MedioBajo"</span>))), <span class="at">n =</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">6</span>)</span>
+<span id="cb16-410"><a href="#cb16-410" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-411"><a href="#cb16-411" aria-hidden="true" tabindex="-1"></a>Para analizar este mismo evento, pero ahora con mujeres, únicamente (**S=="Mujer"**) y ahora la probabilidad es:</span>
+<span id="cb16-412"><a href="#cb16-412" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb16-413"><a href="#cb16-413" aria-hidden="true" tabindex="-1"></a>P(T \in <span class="sc">\{</span>\text{Auto},\text{Moto}<span class="sc">\}</span> \mid </span>
+<span id="cb16-414"><a href="#cb16-414" aria-hidden="true" tabindex="-1"></a>S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ </span>
+<span id="cb16-415"><a href="#cb16-415" aria-hidden="true" tabindex="-1"></a>A \in <span class="sc">\{</span>\text{MedianaEdad},\text{AdultoMayor}<span class="sc">\}</span>)</span>
+<span id="cb16-416"><a href="#cb16-416" aria-hidden="true" tabindex="-1"></a>=</span>
+<span id="cb16-417"><a href="#cb16-417" aria-hidden="true" tabindex="-1"></a>\frac{<span class="sc">\#\{</span>T \in <span class="sc">\{</span>\text{Auto},\text{Moto}<span class="sc">\}</span>,\ S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in <span class="sc">\{</span>\text{MedianaEdad},\text{AdultoMayor}<span class="sc">\}\}</span>}</span>
+<span id="cb16-418"><a href="#cb16-418" aria-hidden="true" tabindex="-1"></a>{<span class="sc">\#\{</span>S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in <span class="sc">\{</span>\text{MedianaEdad},\text{AdultoMayor}<span class="sc">\}\}</span>}.</span>
+<span id="cb16-419"><a href="#cb16-419" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb16-420"><a href="#cb16-420" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-423"><a href="#cb16-423" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-424"><a href="#cb16-424" aria-hidden="true" tabindex="-1"></a><span class="fu">cpquery</span>(bn, </span>
+<span id="cb16-425"><a href="#cb16-425" aria-hidden="true" tabindex="-1"></a>        <span class="at">event =</span> ((T<span class="sc">==</span><span class="st">"Moto"</span>)<span class="sc">|</span>(T<span class="sc">==</span><span class="st">"Auto"</span>)), </span>
+<span id="cb16-426"><a href="#cb16-426" aria-hidden="true" tabindex="-1"></a>        <span class="at">evidence =</span> (((S<span class="sc">==</span><span class="st">"Mujer"</span>)<span class="sc">&amp;</span>(D<span class="sc">==</span><span class="st">"Semana"</span>)<span class="sc">&amp;</span>(A<span class="sc">==</span><span class="st">"MedianaEdad"</span>)<span class="sc">&amp;</span>(EST<span class="sc">==</span><span class="st">"MedioBajo"</span>))<span class="sc">|</span>((S<span class="sc">==</span><span class="st">"Mujer"</span>)<span class="sc">&amp;</span>(D<span class="sc">==</span><span class="st">"Semana"</span>)<span class="sc">&amp;</span>(A<span class="sc">==</span><span class="st">"AdultoMayor"</span>)<span class="sc">&amp;</span>(EST<span class="sc">==</span><span class="st">"MedioBajo"</span>))), </span>
+<span id="cb16-427"><a href="#cb16-427" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="dv">10</span><span class="sc">^</span><span class="dv">6</span>)</span>
+<span id="cb16-428"><a href="#cb16-428" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb16-429"><a href="#cb16-429" aria-hidden="true" tabindex="-1"></a>En conclusión, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.</span>
+<span id="cb16-430"><a href="#cb16-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-431"><a href="#cb16-431" aria-hidden="true" tabindex="-1"></a><span class="fu">### Probabilidad de residir en Aguascalientes dado taxi {#q2}</span></span>
+<span id="cb16-432"><a href="#cb16-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-433"><a href="#cb16-433" aria-hidden="true" tabindex="-1"></a>¿Cuál es la probabilidad de que una persona de estrato MedioBajo viva en Aguascalientes dado que se mueve en taxi?</span>
+<span id="cb16-434"><a href="#cb16-434" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-435"><a href="#cb16-435" aria-hidden="true" tabindex="-1"></a>En esta consulta, el evento de interés *O* = *Aguascalientes* está fuera del soporte muestral de la base utilizada. La EOD-2017 analizada corresponde a la Zona Metropolitana del Valle de México (ZMVM); en este marco, la variable O (Entidad de origen) solo toma los valores CDMX, Hidalgo y Edomex. Es decir que el dominio observado de (O) es $$ \Omega_O = <span class="sc">\{</span>\text{CDMX},\text{Hidalgo},\text{Edomex}<span class="sc">\}</span></span>
+<span id="cb16-436"><a href="#cb16-436" aria-hidden="true" tabindex="-1"></a>$$por lo que *Aguascalientes* no pertenece al dominio. Esta restricción se confirma con un conteo simple: la frecuencia de registros con *O* = *Aguascalientes* es 0.</span>
+<span id="cb16-437"><a href="#cb16-437" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-438"><a href="#cb16-438" aria-hidden="true" tabindex="-1"></a>Bajo esta situación, la probabilidad condicional solicitada se evalúa como: $$</span>
+<span id="cb16-439"><a href="#cb16-439" aria-hidden="true" tabindex="-1"></a>P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr)</span>
+<span id="cb16-440"><a href="#cb16-440" aria-hidden="true" tabindex="-1"></a>=\frac{<span class="sc">\#\{</span>O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}<span class="sc">\}</span>}</span>
+<span id="cb16-441"><a href="#cb16-441" aria-hidden="true" tabindex="-1"></a>{<span class="sc">\#\{</span>EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}<span class="sc">\}</span>}.</span>
+<span id="cb16-442"><a href="#cb16-442" aria-hidden="true" tabindex="-1"></a>$$Dado que el numerador es 0 (no existen casos con *O* = *Aguascalientes* en la muestra) y el denominador es positivo (sí hay observaciones con *EST* = *MedioBajo* y *T* = *Taxi*), se obtiene:</span>
+<span id="cb16-443"><a href="#cb16-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-444"><a href="#cb16-444" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb16-445"><a href="#cb16-445" aria-hidden="true" tabindex="-1"></a>P(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\, T=\mathrm{Taxi})=0</span>
+<span id="cb16-446"><a href="#cb16-446" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb16-447"><a href="#cb16-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-448"><a href="#cb16-448" aria-hidden="true" tabindex="-1"></a>Es importante mencionar que se trata de una imposibilidad muestral por ausencia de casos en la muestra, no necesariamente de una imposibilidad poblacional.</span>
+<span id="cb16-449"><a href="#cb16-449" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-450"><a href="#cb16-450" aria-hidden="true" tabindex="-1"></a><span class="fu">### Duración \&gt;1 h por tamaño de localidad y modo {#q3}</span></span>
+<span id="cb16-451"><a href="#cb16-451" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-452"><a href="#cb16-452" aria-hidden="true" tabindex="-1"></a>Nos interesa saber si es más probable que las personas de localidades <span class="sc">\&lt;</span> 2,500 habitantes realicen viajes de más de 1 hora en automóvil, colectivo/micro, metro, autobús, trolebús, tren ligero, tren suburbano o transporte de personal, en comparación con las personas de localidades <span class="sc">\&gt;</span> 100,000 habitantes que cumplan con las mismas características.</span>
+<span id="cb16-453"><a href="#cb16-453" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-454"><a href="#cb16-454" aria-hidden="true" tabindex="-1"></a><span class="fu">### Autos/camionetas y escolaridad {#q4}</span></span>
+<span id="cb16-455"><a href="#cb16-455" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-456"><a href="#cb16-456" aria-hidden="true" tabindex="-1"></a>¿Cuál es la probabilidad de que una persona tenga al menos un auto o camioneta dado que su nivel de escolaridad es primaria o preescolar?</span>
+<span id="cb16-457"><a href="#cb16-457" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-458"><a href="#cb16-458" aria-hidden="true" tabindex="-1"></a><span class="fu">## Conclusiones</span></span>
+<span id="cb16-459"><a href="#cb16-459" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-460"><a href="#cb16-460" aria-hidden="true" tabindex="-1"></a><span class="fu">## Referencias</span></span>
+</code><button title="Copiar al portapapeles" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
