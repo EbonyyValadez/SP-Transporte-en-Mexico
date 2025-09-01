@@ -374,13 +374,16 @@ Sobre el modelo seleccionado realizamos las consultas probabilísticas con `cpqu
 
 Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.
 
-El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es: $$
+El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es: 
+$$
+\begin{align*}
 P(T \in \{\text{Auto},\text{Moto}\} \mid 
 S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
-A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
+A \in \{\text{MedianaEdad},\text{AdultoMayor}\}) \\\\
 =
 \frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
 {\#\{S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+\end{align*}
 $$
 
 ```{r}
@@ -388,12 +391,14 @@ cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="S
 ```
 
 Para analizar este mismo evento, pero ahora con mujeres, únicamente (**S=="Mujer"**) y ahora la probabilidad es: $$
-P(T \in \{\text{Auto},\text{Moto}\} \mid 
-S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
-A \in \{\text{MedianaEdad},\text{AdultoMayor}\})
-=
-\frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
-{\#\{S=\text{Mujer},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+\begin{align*}
+P(&T \in \{Auto, Moto\}\ |\ S = \text{Mujer},\, D = Semana,\, EST = MedioBajo,\& A \in \{\text{MedianaEdad}, \text{AdultoMayor}\}) = \\\\
+&\frac{
+  \#\{T \in \{Auto, Moto\},\, S = Mujer,\, D = Semana,\, EST = MedioBajo,\, A \in \{\text{MedianaEdad}, \text{AdultoMayor}\}\}
+}{
+  \#\{S = Mujer,\, D = Semana,\, EST = MedioBajo,\, A \in \{\text{MedianaEdad}, \text{AdultoMayor}\}\}
+}
+\end{align*}
 $$
 
 ```{r}
@@ -412,11 +417,15 @@ En conclusión, los hombres de esas características usan más la moto o automov
 En esta consulta, el evento de interés *O* = *Aguascalientes* está fuera del soporte muestral de la base utilizada. La EOD-2017 analizada corresponde a la Zona Metropolitana del Valle de México (ZMVM); en este marco, la variable O (Entidad de origen) solo toma los valores CDMX, Hidalgo y Edomex. Es decir que el dominio observado de (O) es $$ \Omega_O = \{\text{CDMX},\text{Hidalgo},\text{Edomex}\}
 $$por lo que *Aguascalientes* no pertenece al dominio. Esta restricción se confirma con un conteo simple: la frecuencia de registros con *O* = *Aguascalientes* es 0.
 
-Bajo esta situación, la probabilidad condicional solicitada se evalúa como: $$
-P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr)
-=\frac{\#\{O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}
+Bajo esta situación, la probabilidad condicional solicitada se evalúa como: 
+$$
+\begin{align*}
+P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr) = \\\\
+\frac{\#\{O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}
 {\#\{EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}.
-$$Dado que el numerador es 0 (no existen casos con *O* = *Aguascalientes* en la muestra) y el denominador es positivo (sí hay observaciones con *EST* = *MedioBajo* y *T* = *Taxi*), se obtiene:
+\end{align*}
+$$
+Dado que el numerador es 0 (no existen casos con *O* = *Aguascalientes* en la muestra) y el denominador es positivo (sí hay observaciones con *EST* = *MedioBajo* y *T* = *Taxi*), se obtiene:
 
 $$
 P(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\, T=\mathrm{Taxi})=0
@@ -508,9 +517,11 @@ $$
 De esta forma, la probabilidad condicional puede escribirse como:
 
 $$
+\begin{align*}
 P\!\left(V \neq 0 \;\middle|\; \{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\right)
-= \frac{\#\{V \neq 0, \; \{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\}}
+ \\\\ = \frac{\#\{V \neq 0, \; \{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\}}
 {\#\{\{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\}}
+\end{align*}
 $$
 
 En este caso, el denominador representa a todas las personas cuya escolaridad es preescolar o primaria, mientras que el numerador cuenta únicamente a aquellas que, además, tienen al menos un auto o camioneta.  
