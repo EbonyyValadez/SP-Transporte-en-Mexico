@@ -1,0 +1,557 @@
+---
+title: "Redes Bayesianas para el transporte"
+author:
+  - name: "Jessica Dong"
+  - name: "Ebony Valadez"
+  - name: "Emiliano Guzmán"
+  - name: "Rafael Gutiérrez "
+date: today
+lang: es
+abstract: |
+  Este estudio utiliza la Encuesta Origen-Destino del INEGI realizada en 2017 para analizar los patrones de movilidad de los ciudadanos en la Ciudad de México. Mediante el uso de la teoría de redes bayesianas, se construye un modelo probabilístico a partir de los datos de la encuesta para analizar las relaciones entre las variables sociodemográficas y de transporte. Se proponen y evalúan diferentes estructuras de Redes Acíclicas Dirigidas (DAGs) para representar estas dependencias. Los resultados del análisis permiten responder a preguntas clave sobre la movilidad. Se busca resaltar la importancia de los modelos probabilísticos para comprender la complejidad de los modelos de transporte en las ciudades mexicanas, con el objetivo de brindar información útil para la planeación de políticas públicas relacionadas con el transporte.
+keywords: ["redes bayesianas", "bnlearn", "movilidad", "discretización"]
+
+execute:
+  echo: false       
+  warning: false
+  message: false
+
+crossref:
+  fig-prefix: "Figura"
+  tbl-prefix: "Tabla"
+  eq-prefix: "Ecuación"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    code-fold: show
+    code-tools: true
+    df-print: paged
+    math: mathjax
+  pdf:
+    documentclass: article
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    geometry: "margin=1in"
+    fig-cap-location: bottom
+    tbl-cap-location: top
+---
+
+## Introducción
+
+La movilidad urbana es un aspecto fundamental para el desarrollo socioeconómico de las ciudades modernas, ya que esta influye de manera significativa en la calidad de vida de sus habitantes, el medio ambiente y la economía de cada una. En la Zona Metropolitana del Valle de México, esto presenta una gran complejidad debido a su tamaño, densidad de población y red de transporte. Comprender los patrones de viaje y los factores que influyen en la toma de decisiones de los ciudadanos es crucial para el diseño de políticas públicas más efectivas y sostenibles.
+
+La Encuesta Origen-Destino en Hogares (EOD) 2017, realizada por el Instituto Nacional de Estadística y Geografía (INEGI) en colaboración con el Instituto de Ingeniería de la UNAM, fue la fuente de datos más importante para este proyecto. A partir de esta encuesta, se obtuvo información que muestra los patrones de movilidad cotidiana de los habitantes de la Ciudad de México y las características de los viajes que estos realizan. Mediante estos datos, es posible analizar las relaciones entre variables sociodemográficas (como género, edad e ingresos) y las decisiones de transporte (como el medio utilizado, la duración y el motivo del viaje) \[1\].
+
+Este artículo explora estas relaciones de dependencia utilizando la teoría de las **redes bayesianas**. Este enfoque permite modelar la estructura de dependencia probabilística entre múltiples variables, lo que es bastante útil para analizar fenómenos complejos como la movilidad urbana. El objetivo de este estudio es es construir y comparar diferentes modelos de Redes Acíclicas Dirigidas (DAGs) que representen las relaciones entre las variables de la encuesta mencionada; para posteriormente, responder preguntas de investigación específicas acerca de la movilidad en la ZMVM.
+
+## Metodología
+
+### Construcción de la base de datos
+
+Se integraron cuatro archivos de la EOD-2017 para la ZMVM (ttransporte, tviaje, thogar y tsdem) mediante uniones internas usando las llaves id_hog, id_soc e id_via, filtrando previamente columnas duplicadas para evitar redundancias. A partir de la tabla unificada se seleccionaron las variables relevantes para las consultas (sexo, edad, p5_14, estrato, p5_3, ent, tloc, p5_16_1_1, p2_1_1 y niv) y se renombraron a descriptores claros: transporte, dia_viaje, localidad, escolaridad, tiempo_viaje_horas, autos_camionetas y entidad_origen (manteniendo sexo, edad y estrato). Como control de calidad, se identificaron códigos no informativos; en particular, el valor 99 en tiempo_viaje_horas (no sabe/no especificado según INEGI) representó \~1.11% de los registros, por lo que se recodificó a NA y se eliminaron esas filas para no sesgar las estimaciones. La variable entidad_origen quedó restringida a CDMX, Hidalgo y Edomex por diseño muestral, lo que implica que cualquier consulta que involucre otra entidad arroja probabilidad muestral cero. Con esta base de datos se procedió al aprendizaje de la estructura (DAG), la estimación de las CPTs y la realización de las consultas probabilísticas del estudio.
+
+### Redes bayesianas propuestas
+
+```{r}
+#| eval: false
+install.packages("bnlearn")
+```
+
+```{r}
+library(bnlearn)
+```
+
+```{r}
+set.seed(1234)
+```
+
+```{r}
+datos=read.csv("~/SP-Transporte-en-Mexico/data_corregido.csv")
+head(datos)
+```
+
+Una vez llamada la base de datos, se crea un diccionario y se cambian los valores de las variables a datos de tipo factor, así como al significado correspondiente en texto para un manejo de los datos más sencillo.
+
+```{r}
+#Sexo
+datos$S = factor(datos$S,
+                  levels = c(1, 2),
+                  labels = c("Hombre", "Mujer"))
+
+#Transporte
+datos$T = factor(datos$T,
+                  levels = 1:20,
+                  labels = c("Auto", "Colectivo", "TaxiApp", "TaxiCalle",
+                             "Metro", "RTP_M1", "Bici", "Autobus",
+                             "Moto", "Trolebus", "Metrobús",
+                             "TrenLigero", "Suburbano", "Caminar",
+                             "Mexicable", "Bicitaxi", "Mototaxi",
+                             "Escolar", "Personal", "Otro"))
+
+#Estrato
+datos$EST = factor(datos$EST,
+                    levels = 1:4,
+                    labels = c("Bajo", "MedioBajo", "MedioAlto", "Alto"))
+
+#Día de viaje
+datos$D = factor(datos$D,
+                  levels = c(1, 2),
+                  labels = c("Semana", "FinSemana"))
+
+#Entidad
+datos$O = factor(datos$O,
+                  levels = c(9, 13, 15),
+                  labels = c("CDMX", "Hidalgo", "Edomex"))
+
+#Localidad
+datos$L = factor(datos$L,
+                  levels = 1:4,
+                  labels = c("Loc_100k+", "Loc_15k_99k", "Loc_2.5k_14k", "Loc_menor2.5k"))
+
+#Cantidad de vehículos con los que cuentan
+datos$V = factor(datos$V,
+                  levels = 0:8,
+                  labels = paste0("Autos_", 0:8))
+
+#Escolaridad
+datos$ESC = factor(datos$ESC,
+                    levels = c(0:9, 99),
+                    labels = c("Ninguno", "Preescolar", "Primaria", "Secundaria",
+                               "CarrTecSec", "NormalBas", "Prepa", "CarrTecPrepa",
+                               "Licenciatura", "Posgrado", "NoSabe"))
+
+#Edad categorizada
+datos$A = factor(datos$A,
+                  levels = 1:4,
+                  labels = c("Joven", "Adulto", "MedianaEdad", "AdultoMayor"))
+
+#Tiempo de viaje (0 = menos de 1h, cualquier otro valor = 1h o más)
+datos$H = ifelse(datos$H == 0, 0, 1)
+datos$H = factor(datos$H,
+                  levels = c(0, 1),
+                  labels = c("Menos1h", "1homas"))
+
+
+#Confirmar que en todas las variables sus valores sean factores
+sapply(datos, class)
+```
+
+```{r}
+head(datos)
+```
+
+Posteriormente, se propusieron 3 DAGs diferentes con base en las relaciones entre las variables que se consideraron de mayor impacto, denotando nodos con sus respectivos arcos, así como las relaciones de dependencia. Asimismo, para el manejo de la DAG se asignó una clave corta a cada variable:
+
+-   **A** = edad_cat\
+-   **D** = dia_viaje\
+-   **EST** = estrato\
+-   **V** = autos_camionetas\
+-   **L** = localidad\
+-   **H** = tiempo_cat\
+-   **O** = Entidad\
+-   **ESC** = escolaridad\
+-   **S** = sexo\
+-   **T** = transporte
+
+La DAG 1 se formula con base en que la edad determina la educación y ésta se relaciona con el estrato sociodemográfico de la perosna y el tipo de transporte que utiliza, así como arcos en función de cuestiones geográficas y el tiempo de traslado, así como quizá el sexo interfiera con el medio de transporte.
+
+```{r}
+dag1 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+
+```{r}
+arc_set1 = matrix(c("A","ESC",
+                   "ESC","EST",
+                   "EST","V",
+                   "V","T",
+                   "T","H",
+                   "S","T",
+                   "D","T",
+                   "O","L",
+                   "L","EST",
+                   "L","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+
+```{r}
+arcs(dag1) = arc_set1
+```
+
+```{r}
+dag1
+```
+
+```{r}
+graphviz.plot(dag1, shape = "rectangle")
+```
+
+```{r}
+bn_mle=bn.fit(dag1,data=datos, method='mle')
+arc.strength(dag1, data = datos, criterion = "mi")
+```
+
+Se observa cómo las relaciones de dependencia son bastante débiles, siendo la mayor la relación entre la localidad de la persona con respecto a las horas que tarda en el transporte; sin embargo, aún sigue siendo muy baja.
+
+La segunda DAG propuesta se centra principalmente en el entorno geográfico, es decir, que del lugar de origen o la localidad se relacionan el estrato, el tiempo del viaje, la cantidad de vehículos, así como otras relaciones entre el sexo y la edad para determinar la escolaridad y el medio de transporte.
+
+```{r}
+dag2 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+
+```{r}
+arc_set2 = matrix(c("O","L",
+                   "L","EST",
+                   "EST","T",
+                   "O","H",
+                   "L","H",
+                   "EST","V",
+                   "V","T",
+                   "S","T",
+                   "A","ESC",
+                   "ESC","T",
+                   "D","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+
+```{r}
+arcs(dag2) = arc_set2
+```
+
+```{r}
+dag2
+```
+
+```{r}
+graphviz.plot(dag2, shape = "rectangle")
+```
+
+```{r}
+bn_mle=bn.fit(dag2,data=datos, method='mle')
+arc.strength(dag2, data = datos, criterion = "mi")
+```
+
+Nuevamente, al analizar las relaciones de dependencia entre las variables, se observa que la dependecia más fuerte va desde el nodo **L** al nodo **H**.
+
+Por último, la tercera DAG se basa principalmente en factores personales como los determinantes de mayor impacto. Teniendo como nodos padres e independientes la edad y el sexo, y que a partir de éstos se condicionen otros aspectos relacionados con la movilidad de las personas, su escolaridad y el estrato en el que se encuentran.
+
+```{r}
+dag3 = empty.graph(nodes = c("A", "D", "EST", "V", "L", "H", "O", "ESC","S","T"))
+```
+
+```{r}
+arc_set3 = matrix(c("A","ESC",
+                   "ESC","EST",
+                   "EST","T",
+                   "T","H",
+                   "S","T",
+                   "A","V",
+                   "V","T",
+                   "O","L",
+                   "L","T",
+                   "D","T",
+                   "L","H"), 
+                 byrow = TRUE, ncol = 2,
+                 dimnames = list(NULL, c("from","to")))
+```
+
+```{r}
+arcs(dag3) = arc_set3
+dag3
+```
+
+```{r}
+graphviz.plot(dag3, shape = "rectangle")
+```
+
+```{r}
+bn_mle=bn.fit(dag3,data=datos, method='mle')
+arc.strength(dag3, data = datos, criterion = "mi")
+```
+
+En la tercera DAG destacan las relaciones de dependencia de **A** a **V**, relacionando la edad de la persona con la cantidad de vehículos en su hogar, así como de **L** a **T**, asociando la localidad con el tipo de transporte que utiliza.
+
+### Selección de la DAG
+
+Una vez que ya se plantearon las 3 DAGs propuestas, se comparan sus network scores para determinar cuál de las 3 es la que mejor refleja la estrucutra de dependencia de los datos, para esto se usan las pruebas **BIC** (Bayesian Information Criterion) y **AIC** (Akaike Information Criterion).
+
+El puntaje de la prueba BIC en la primera DAG es:
+
+```{r}
+score(dag1, data = datos, type = "bic")
+```
+
+El puntaje de la prueba AIC en la primera DAG es:
+
+```{r}
+score(dag1, data = datos, type = "aic")
+```
+
+El puntaje de la prueba BIC en la segunda DAG es:
+
+```{r}
+score(dag2, data = datos, type = "bic")
+```
+
+El puntaje de la prueba AIC en la segunda DAG es:
+
+```{r}
+score(dag2, data = datos, type = "aic")
+```
+
+El puntaje de la prueba BIC en la tercera DAG es:
+
+```{r}
+score(dag3, data = datos, type = "bic")
+```
+
+El puntaje de la prueba AIC en la tercera DAG es:
+
+```{r}
+score(dag3, data = datos, type = "aic")
+```
+
+Dado que la primera DAG es la que tiene un mayor puntaje (dentro de la librería bnlearn aquella con mejor ajuste es la que tiene mayor puntaje) en ambas pruebas, entonces es la red que se ajusta mejor a los datos.
+
+De igual forma, se emplea el algoritmo **hill-climbing** para obtener la mejor estructura de la DAG en función de la base de datos.
+
+```{r}
+best_dag = hc(datos)
+modelstring(best_dag)
+```
+
+```{r}
+bn=bn.fit(best_dag,data=datos)
+```
+
+La cual se ve de la siguiente manera, con los arcos creando las relaciones de dependencia de sus determinados nodos.
+
+```{r}
+graphviz.plot(best_dag, shape = "rectangle")
+```
+
+```{r}
+arc.strength(best_dag, data = datos, criterion = "mi")
+```
+
+En esta nueva DAG generada por el algoritmo hill-climbing la fuerza entre los nodos varía, siendo en la mayoría de 0; sin embargo, hay algunas otras relaciones más fuertes como el sexo con si se transportan entre semana o no, o el tiempo que tardan, aunque otras lógicamente no hacen sentido, tal como el sexo con la entidad de origen.
+
+El puntaje en la prueba BIC de la nueva DAG es:
+
+```{r}
+score(best_dag, data = datos, type = "bic")
+```
+
+El puntaje en la prueba AIC de la nueva DAG es:
+
+```{r}
+score(best_dag, data = datos, type = "aic")
+```
+
+Se observa que la nueva DAG determinada por hill-climbing tiene un mejor ajuste de su red en la relación de los datos y sus respectivas variables, ya que tiene un puntaje mayor. Por tal motivo, se llevarán a cabo las queries con base en **best_dag**.
+
+## Aplicación
+
+Trabajamos con la EOD-2017 (ZMVM; \~890 000 registros). Las variables consideradas fueron: S (Sexo), A (Edad categorizada), EST (Estrato), T (Transporte), D (Día de viaje), O (Entidad de origen), L (Tamaño de localidad), V (Autos disponibles), ESC (Escolaridad) y H (Duración del viaje). Tras la limpieza de códigos, recodificamos a factores con etiquetas y discretizamos cuando fue necesario (p. ej., H en *Menos1h* vs *1homas*).
+
+Modelamos con redes bayesianas discretas. Primero propusimos un DAG sustentado en hipótesis sustantivas; al mismo tiempo, aprendimos una estructura desde los datos mediante hill climbing. Para ambas estructuras ajustamos las tablas de probabilidad condicional (CPTs) con suavizado bayesiano.
+
+La selección del modelo se basó en AIC y BIC, buscando el mejor equilibrio entre ajuste y complejidad. Además, evaluamos dependencias locales con `arc.strength` (información mutua) y pruebas de independencia para identificar arcos débiles o prescindibles.
+
+Sobre el modelo seleccionado realizamos las consultas probabilísticas con `cpquery` mediante likelihood weighting, reportando los valores puntuales y señalando las limitaciones muestrales cuando aplicaba.
+
+### Uso de auto/moto por sexo y edad (entre semana) {#q1}
+
+Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación con las mujeres con las mismas características.
+
+El evento de interés en está consulta es si la persona de transporta en automóvil o moto (**T == "Moto"** o **T == "Auto"**); dado que sea hombre (**S=="Hombre"**), se transporte entre semana (**D=="Semana"**), se encuentre en un estrato sociodemográfico medio bajo (**EST=="MedioBajo"**) y sea de edad media o alta (**A=="MedianaEdad" o A=="AdultoMayor"**). La probabilidad de que suceda es: 
+$$
+\begin{align*}
+P(T \in \{\text{Auto},\text{Moto}\} \mid 
+S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ 
+A \in \{\text{MedianaEdad},\text{AdultoMayor}\}) \\\\
+=
+\frac{\#\{T \in \{\text{Auto},\text{Moto}\},\ S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}
+{\#\{S=\text{Hombre},\ D=\text{Semana},\ EST=\text{MedioBajo},\ A \in \{\text{MedianaEdad},\text{AdultoMayor}\}\}}.
+\end{align*}
+$$
+
+```{r}
+cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Hombre")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), n = 10^6)
+```
+
+Para analizar este mismo evento, pero ahora con mujeres, únicamente (**S=="Mujer"**) y ahora la probabilidad es: $$
+\begin{align*}
+P(&T \in \{Auto, Moto\}\ |\ S = \text{Mujer},\, D = Semana,\, EST = MedioBajo,\& A \in \{\text{MedianaEdad}, \text{AdultoMayor}\}) = \\\\
+&\frac{
+  \#\{T \in \{Auto, Moto\},\, S = Mujer,\, D = Semana,\, EST = MedioBajo,\, A \in \{\text{MedianaEdad}, \text{AdultoMayor}\}\}
+}{
+  \#\{S = Mujer,\, D = Semana,\, EST = MedioBajo,\, A \in \{\text{MedianaEdad}, \text{AdultoMayor}\}\}
+}
+\end{align*}
+$$
+
+```{r}
+cpquery(bn, 
+        event = ((T=="Moto")|(T=="Auto")), 
+        evidence = (((S=="Mujer")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Mujer")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), 
+        n = 10^6)
+```
+
+En conclusión, los hombres de esas características usan más la moto o automovil entre semana que las mujeres con las mismas características.
+
+### Probabilidad de residir en Aguascalientes dado taxi {#q2}
+
+¿Cuál es la probabilidad de que una persona de estrato MedioBajo viva en Aguascalientes dado que se mueve en taxi?
+
+En esta consulta, el evento de interés *O* = *Aguascalientes* está fuera del soporte muestral de la base utilizada. La EOD-2017 analizada corresponde a la Zona Metropolitana del Valle de México (ZMVM); en este marco, la variable O (Entidad de origen) solo toma los valores CDMX, Hidalgo y Edomex. Es decir que el dominio observado de (O) es $$ \Omega_O = \{\text{CDMX},\text{Hidalgo},\text{Edomex}\}
+$$por lo que *Aguascalientes* no pertenece al dominio. Esta restricción se confirma con un conteo simple: la frecuencia de registros con *O* = *Aguascalientes* es 0.
+
+Bajo esta situación, la probabilidad condicional solicitada se evalúa como: 
+$$
+\begin{align*}
+P\bigl(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\bigr) = \\\\
+\frac{\#\{O=\mathrm{Aguascalientes},\,EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}
+{\#\{EST=\mathrm{MedioBajo},\,T=\mathrm{Taxi}\}}.
+\end{align*}
+$$
+Dado que el numerador es 0 (no existen casos con *O* = *Aguascalientes* en la muestra) y el denominador es positivo (sí hay observaciones con *EST* = *MedioBajo* y *T* = *Taxi*), se obtiene:
+
+$$
+P(O=\mathrm{Aguascalientes}\mid EST=\mathrm{MedioBajo},\, T=\mathrm{Taxi})=0
+$$
+
+Es importante mencionar que se trata de una imposibilidad muestral por ausencia de casos en la muestra, no necesariamente de una imposibilidad poblacional.
+
+### Duración \>1 h por tamaño de localidad y modo {#q3}
+
+Nos interesa saber si es más probable que las personas de localidades \< 2,500 habitantes realicen viajes de más de 1 hora en automóvil, colectivo/micro, metro, autobús, trolebús, tren ligero, tren suburbano o transporte de personal, en comparación con las personas de localidades \> 100,000 habitantes que cumplan con las mismas características.
+
+Para responder lo anterior, se toma en cuenta el evento de interés *H* = "1homas" (tiempo de viaje mayor o igual a una hora), condicionado a dos tipos de evidencia:
+
+1.  **Localidad** (*L*): se encuentran las siguientes categorías
+
+    $$
+    \Omega_L = \{\text{Loc\_100k+}, \text{Loc\_15k\_99k}, \text{Loc\_2.5k\_14k}, \text{Loc\_menor2.5k}\}
+    $$
+
+2.  **Medio de transporte** (*T*): se toman en cuenta solo los medios de interés
+
+    $$
+    \{\text{Auto}, \text{Colectivo}, \text{Metro}, \text{Autobus}, \text{Trolebus}, \text{TrenLigero}, \text{Suburbano}, \text{Personal}\}
+    $$
+
+Entonces, la probabilidad condicional es la siguiente:
+
+$$
+P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\})
+= \frac{\#\{H=\mathrm{1homas}, L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}\}}
+{\#\{L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}\}}
+$$
+
+y de la misma manera para $L = \mathrm{Loc\_100k+}$.
+
+```{r}
+# definir los transportes de interes
+transportes_interes <- c("Auto", "Colectivo", "Metro", "Autobus",
+                         "Trolebus", "TrenLigero", "Suburbano", "Personal")
+```
+
+```{r}
+# P para localidades menores a 2500 habitantes
+p_loc_menor2500 <- cpquery(
+  bn,
+  event = (H == "1homas"),
+  evidence = (L == "Loc_menor2.5k" & T %in% transportes_interes),
+  n = 10^6
+)
+p_loc_menor2500
+```
+
+```{r}
+# P de localidades mayores a 100000 habitantes
+p_loc_mayor100k <- cpquery(
+  bn,
+  event = (H == "1homas"),
+  evidence = (L == "Loc_100k+" & T %in% transportes_interes),
+  n = 10^6
+)
+p_loc_mayor100k
+```
+
+Los resultados obtenidos con $n=10^6$ simulaciones fueron:
+
+-   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_menor2.5k}, T \in \{\dots\}) \approx 0.18$
+-   $P(H=\mathrm{1homas}\mid L=\mathrm{Loc\_100k+}, T \in \{\dots\}) \approx 0.20$
+
+Es decir, bajo el modelo de redes bayesianas, la probabilidad de realizar viajes de una hora o más es ligeramente **mayor en localidades grandes (100k+) que en las localidades muy pequeñas (\<2.5k)**.
+
+Así, se observa que la probabilidad de que las personas de una localidad chica hagan más de una hora de viaje en los medios de transporte de interés es menor a la probabilidad de las personas de localidades con más habitantes. Entonces, las personas en localidades grandes tienen ligeramente más probabilidad de hacer viajes largos, que duren más de una hora, que las de localidades muy pequeñas.
+
+### Autos/camionetas y escolaridad {#q4}
+
+¿Cuál es la probabilidad de que una persona tenga al menos un auto o camioneta dado que su nivel de escolaridad es primaria o preescolar?
+
+El evento de interés es que una persona tenga al menos un auto o camioneta, es decir:
+
+$$
+V \neq 0
+$$
+
+La evidencia corresponde a que el nivel de escolaridad de la persona sea primaria o preescolar, es decir:
+
+$$
+\{ ESC = \text{Preescolar} \} \;\cup\; \{ ESC = \text{Primaria} \}
+$$
+
+De esta forma, la probabilidad condicional puede escribirse como:
+
+$$
+\begin{align*}
+P\!\left(V \neq 0 \;\middle|\; \{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\right)
+ \\\\ = \frac{\#\{V \neq 0, \; \{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\}}
+{\#\{\{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\}}
+\end{align*}
+$$
+
+En este caso, el denominador representa a todas las personas cuya escolaridad es preescolar o primaria, mientras que el numerador cuenta únicamente a aquellas que, además, tienen al menos un auto o camioneta.  
+
+
+```{r}
+cpquery(bn,
+        event = (V != "Autos_0"),
+        evidence = ( (ESC == "Preescolar") | (ESC == "Primaria")),
+        n = 10^6)
+
+```
+
+El resultado fue:
+$$
+P\!\left(V \neq 0 \;\middle|\; \{ESC = \text{Preescolar}\} \cup \{ESC = \text{Primaria}\}\right) \approx 0.292
+$$
+
+Los resultados muestran que la probabilidad de que una persona con nivel de escolaridad preescolar o primaria tenga al menos un auto o camioneta es cercana al 29%. Esto sugiere que, dentro de los hogares con menor nivel educativo, la disponibilidad de vehículo privado es limitada, lo cual puede tener implicaciones directas en sus patrones de movilidad cotidiana y en el acceso equitativo a oportunidades dentro de la Zona Metropolitana del Valle de México.
+
+## Conclusiones
+
+Este estudio mostró que las **redes bayesianas** constituyen una herramienta poderosa para analizar fenómenos complejos como la movilidad urbana, al permitir representar de forma explícita las dependencias probabilísticas entre variables sociodemográficas y de transporte. A partir de la Encuesta Origen-Destino 2017 del INEGI, se construyeron y evaluaron diferentes estructuras de DAG, identificando que el modelo aprendido mediante **hill-climbing** ofreció el mejor ajuste según los criterios AIC y BIC.  
+
+Las consultas realizadas ejemplifican cómo este enfoque permite responder preguntas específicas de interés en movilidad. En particular, se encontró que los **hombres de edad media o alta y estrato medio-bajo** tienen una probabilidad de aproximadamente **10.9\%** de usar automóvil o moto entre semana, mientras que para **mujeres con las mismas características** la probabilidad es menor, de **7.0\%**.  
+
+Por otro lado, se mostró que la **probabilidad de residir en Aguascalientes dado el uso de taxi** es **0\%**, lo que confirma la limitación muestral de la base, que solo incluye observaciones para CDMX, Hidalgo y Estado de México. Finalmente, respecto a la **duración de los viajes mayores a una hora**, se observó que en localidades pequeñas (< 2,500 habitantes) la probabilidad es de **17.9\%**, mientras que en localidades grandes (> 100,000 habitantes) es ligeramente mayor, alcanzando un **20.2\%**.  
+
+Asimismo, se estimó que la probabilidad de que una persona con **escolaridad primaria o preescolar** tenga al menos un vehículo (auto o camioneta) es de aproximadamente **29.2\%**, evidenciando una menor disponibilidad de transporte privado en estos grupos.  
+
+En conjunto, estos hallazgos reflejan la utilidad de los modelos probabilísticos para comprender los patrones de movilidad cotidiana y la influencia de factores sociodemográficos. Tales modelos no solo permiten explorar dependencias estadísticas, sino también aportar evidencia valiosa para el diseño de políticas públicas de transporte más inclusivas y sostenibles en la Zona Metropolitana del Valle de México.  
+
+
+## Referencias
+Instituto Nacional de Estadística y Geografía. (2017). Encuesta Origen-Destino en Hogares de la Zona Metropolitana del Valle de México (EOD) 2017. INEGI. https://www.inegi.org.mx/programas/eod/2017/
+
+Instituto Nacional de Estadística y Geografía. (2018). Presentación de resultados de la Encuesta Origen-Destino en Hogares de la Zona Metropolitana del Valle de México (EOD) 2017. INEGI. https://www.inegi.org.mx/contenidos/programas/eod/2017/doc/resultados_eod_2017.pdf
