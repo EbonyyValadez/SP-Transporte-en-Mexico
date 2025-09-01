@@ -54,6 +54,13 @@ La Encuesta Origen-Destino en Hogares (EOD) 2017, realizada por el Instituto Nac
 Este artículo explora estas relaciones de dependencia utilizando la teoría de las **redes bayesianas**. Este enfoque permite modelar la estructura de dependencia probabilística entre múltiples variables, lo que es bastante útil para analizar fenómenos complejos como la movilidad urbana. El objetivo de este estudio es es construir y comparar diferentes modelos de Redes Acíclicas Dirigidas (DAGs) que representen las relaciones entre las variables de la encuesta mencionada; para posteriormente, responder preguntas de investigación específicas acerca de la movilidad en la ZMVM.
 
 ## Metodología
+
+### Construcción de la base de datos
+
+Se integraron cuatro archivos de la EOD-2017 para la ZMVM (ttransporte, tviaje, thogar y tsdem) mediante uniones internas usando las llaves id_hog, id_soc e id_via, filtrando previamente columnas duplicadas para evitar redundancias. A partir de la tabla unificada se seleccionaron las variables relevantes para las consultas (sexo, edad, p5_14, estrato, p5_3, ent, tloc, p5_16_1_1, p2_1_1 y niv) y se renombraron a descriptores claros: transporte, dia_viaje, localidad, escolaridad, tiempo_viaje_horas, autos_camionetas y entidad_origen (manteniendo sexo, edad y estrato). Como control de calidad, se identificaron códigos no informativos; en particular, el valor 99 en tiempo_viaje_horas (no sabe/no especificado según INEGI) representó \~1.11% de los registros, por lo que se recodificó a NA y se eliminaron esas filas para no sesgar las estimaciones. La variable entidad_origen quedó restringida a CDMX, Hidalgo y Edomex por diseño muestral, lo que implica que cualquier consulta que involucre otra entidad arroja probabilidad muestral cero. Con esta base de datos se procedió al aprendizaje de la estructura (DAG), la estimación de las CPTs y la realización de las consultas probabilísticas del estudio.
+
+### Redes bayesianas propuestas
+
 ```{r}
 #| eval: false
 install.packages("bnlearn")
@@ -250,6 +257,8 @@ bn_mle=bn.fit(dag3,data=datos, method='mle')
 arc.strength(dag3, data = datos, criterion = "mi")
 ```
 En la tercera DAG destacan las relaciones de dependencia de **A** a **V**, relacionando la edad de la persona con la cantidad de vehículos en su hogar, así como de **L** a **T**, asociando la localidad con el tipo de transporte que utiliza.
+
+### Selección de la DAG
 
 Una vez que ya se plantearon las 3 DAGs propuestas, se comparan sus network scores para determinar cuál de las 3 es la que mejor refleja la estrucutra de dependencia de los datos, para esto se usan las pruebas **BIC** (Bayesian Information Criterion) y **AIC** (Akaike Information Criterion).
 
