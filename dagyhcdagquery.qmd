@@ -153,24 +153,6 @@ Se puede notar que la DAG generada por Hill Climbing se ajusta mejor con base en
 
 prueba de Query: Rafa
 Se busca comprender si los hombres de edad media y alta, y de estrato social medio bajo tienden a usar automóvil o moto entre semana en comparación a las mujeres con las mismas características.
-```{r}
-cpquery(bn,
-        event = (T %in% c("Auto","Moto")),
-        evidence = (S == "Hombre" &
-                    A %in% c("MedianaEdad","AdultoMayor") &
-                    EST == "MedioBajo" &
-                    D == "Semana"),
-        n = 10^6)
-```
-```{r}
-cpquery(bn,
-        event = (T %in% c("Auto","Moto")),
-        evidence = (S == "Mujer" &
-                    A %in% c("MedianaEdad","AdultoMayor") &
-                    EST == "MedioBajo" &
-                    D == "Semana"),
-        n = 10^6)
-```
 
 ```{r}
 cpquery(bn, event = ((T=="Moto")|(T=="Auto")), evidence = (((S=="Hombre")&(D=="Semana")&(A=="MedianaEdad")&(EST=="MedioBajo"))|((S=="Hombre")&(D=="Semana")&(A=="AdultoMayor")&(EST=="MedioBajo"))), n = 10^6)
